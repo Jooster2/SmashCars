@@ -4,6 +4,8 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.*;
+import android.os.ParcelUuid;
+import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +18,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.UUID;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -86,6 +89,7 @@ public class MainActivity extends ActionBarActivity {
         intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        intentFilter.addAction("android.bleutooth.device.action.UUID");
         // Register the broadcast receiver
         registerReceiver(receiver, intentFilter);
     }
@@ -162,6 +166,11 @@ public class MainActivity extends ActionBarActivity {
     public void connectToDevice (BluetoothDevice device) {
         Log.v(TAG, "Inside method connectToDevice");
 
+        ParcelUuid[] uuids = device.getUuids();
+        for(ParcelUuid x : uuids) {
+            Log.i("UUID", x.toString());
+        }
+
         ConnectionActivity connectionActivity = new ConnectionActivity(this, device);
         connectionActivity.execute();
     }
@@ -196,6 +205,11 @@ public class MainActivity extends ActionBarActivity {
                 showFoundDevices();
             } else if(BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
                 Toast.makeText(getApplicationContext(), "paired", Toast.LENGTH_LONG).show();
+            } else if("android.bleutooth.device.action.UUID".equals(action)) {
+                for(Parcelable x : intent.getParcelableArrayExtra("android.bluetooth.device.extra.UUID")) {
+                    ParcelUuid uuid = (ParcelUuid)x;
+                    Log.i("UUID", uuid.toString());
+                }
             }
         }
     };

@@ -64,9 +64,11 @@ public class ConnectionActivity extends AsyncTask<Void, Void, Void> {
                     try
                     {
                         bluetoothSocket.connect();
+
+                        Log.i(TAG, "connected");
                     } catch(IOException e)
                     {
-                        Log.i(TAG, e.getLocalizedMessage());
+                        Log.i(TAG, "connect failed");
                     }
                 }
             }
