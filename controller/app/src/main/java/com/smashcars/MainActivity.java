@@ -1,4 +1,4 @@
-package com.example.jonathan.bluetoothtest;
+package com.smashcars;
 
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -173,7 +173,6 @@ public class MainActivity extends ActionBarActivity {
 
             if(BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-
                         BluetoothAdapter.ERROR);
                 if (state == BluetoothAdapter.STATE_ON) {
                     Toast.makeText(getApplicationContext(),"Bluetooth enabled",
@@ -195,6 +194,8 @@ public class MainActivity extends ActionBarActivity {
             } else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 progressDialog.dismiss();
                 showFoundDevices();
+            } else if(BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                Toast.makeText(getApplicationContext(), "paired", Toast.LENGTH_LONG).show();
             }
         }
     };

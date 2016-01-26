@@ -1,4 +1,4 @@
-package com.example.jonathan.bluetoothtest;
+package com.smashcars;
 
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -10,7 +10,10 @@ import android.os.ParcelUuid;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.UUID;
 
 /**
@@ -51,19 +54,40 @@ public class ConnectionActivity extends AsyncTask<Void, Void, Void> {
                 Log.v(TAG, "Inside try");
                 System.out.println(deviceUUID.toString());
                 bluetoothSocket = chosenDevice.createInsecureRfcommSocketToServiceRecord(deviceUUID);
-                if (bluetoothSocket != null)
+                if(bluetoothSocket != null)
                     System.out.println("Socket created");
                 bluetoothAdapter.cancelDiscovery();
-                if
-                (!bluetoothAdapter.isDiscovering()) {
+                if(!bluetoothAdapter.isDiscovering())
+                {
                     System.out.println("Connecting");
-                    bluetoothSocket.connect();
+                    Log.i(TAG, "connecting");
+                    try
+                    {
+                        bluetoothSocket.connect();
+                    } catch(IOException e)
+                    {
+                        Log.i(TAG, e.getLocalizedMessage());
+                    }
                 }
             }
         } catch (IOException e) {
             connectionSuccess = false;
         }
 
+        if(bluetoothSocket.isConnected()) {
+            Log.i(TAG, "isconnected");
+            PrintWriter bW = null;
+            try {
+                bW = new PrintWriter(bluetoothSocket.getOutputStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(bW != null) {
+                Log.i(TAG, "writing to stream");
+                bW.write("hello");
+            }
+            bW.close();
+        }
         return null;
     }
 
