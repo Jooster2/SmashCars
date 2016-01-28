@@ -13,28 +13,49 @@
         android:layout_height="wrap_content"
         android:text="Connect"
         android:id="@+id/connButton"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:onClick="connectNow"/>
-
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/textMac"
-        android:layout_below="@+id/connButton"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="41dp"
-        android:background="#ff5178"
-        android:editable="true"/>
+        android:onClick="connectNow"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="AddCommand"
-        android:id="@+id/command"
-        android:layout_above="@+id/connButton"
+        android:text="UP"
+        android:id="@+id/upButton"
+        android:layout_below="@+id/connButton"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="101dp"
+        android:tag="up"
+        android:onClick="addCommand"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DOWN"
+        android:id="@+id/downButton"
+        android:layout_below="@+id/upButton"
+        android:layout_centerHorizontal="true"
+        android:tag="down"
+        android:onClick="addCommand"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="LEFT"
+        android:id="@+id/leftButton"
+        android:layout_alignBottom="@+id/downButton"
+        android:layout_toStartOf="@+id/connButton"
+        android:tag="left"
+        android:onClick="addCommand"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RIGHT"
+        android:id="@+id/rightButton"
+        android:layout_below="@+id/upButton"
+        android:layout_toEndOf="@+id/connButton"
+        android:tag="right"
         android:onClick="addCommand"/>
 
 </RelativeLayout>

@@ -16,7 +16,8 @@ import java.util.UUID;
 public class BluetoothHandler {
     //Carls MAC-address
     private static final String SERVER_MAC = "44:D4:E0:27:8F:AC";
-    private static final UUID _UUID = java.util.UUID.fromString("6d357677-c1b7-4789-ac78-8f9f73486c38");
+    private static final int LATENCY = 50;
+    //private static final UUID _UUID = java.util.UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
     private static final String TAG = "bthandler";
 
     private MainActivity mainActivity;
@@ -64,17 +65,14 @@ public class BluetoothHandler {
     }
 
     /**
-     * Attempts to connect to the MAC-address specified in parameter
-     * If parameter is null, connects to SERVER_MAC
-     * @param MAC address to connect to
+     * Attempts to connect to the SERVER_MAC address
      */
-    public void connect(String MAC) {
-        //if(MAC == null)
-            MAC = SERVER_MAC;
+    public void connect() {
         Log.i(TAG, "Starting connection procedure");
-        btServer = btAdapter.getRemoteDevice(MAC);
+        btServer = btAdapter.getRemoteDevice(SERVER_MAC);
         if(btServer != null) {
             Log.i(TAG, "Found server");
+            //Success, device found. Now send the device to a thread and start it
             activeThread = new ActiveThread(btServer);
             activeThread.start();
         } else {
@@ -96,7 +94,7 @@ public class BluetoothHandler {
      */
     private class ActiveThread extends Thread {
         private BluetoothDevice btServer;
-        private boolean isConnected = true;
+        private boolean isConnected = false;
 
         /**
          * Constructor
@@ -116,40 +114,84 @@ public class BluetoothHandler {
 
         /**
          * Opens the connection, and an outputstream to the socket.
-         * Every .5 seconds, writes MainActivitys circular buffer as a sequence of chars
+         * Sends one char over the connection every LATENCY milliseconds
          * Flushes and closes both stream and socket when stopped via disconnect method
          */
         @Override
         @SuppressWarnings("unchecked")
         public void run() {
+            BluetoothSocket socket = null;
+
+            //Create a socket aimed for the server device
             try {
-                BluetoothSocket socket = btServer.createInsecureRfcommSocketToServiceRecord(_UUID);
+                socket = btServer.createInsecureRfcommSocketToServiceRecord(btServer.getUuids()[0].getUuid());
+                Log.i(TAG, "UUID: " + btServer.getUuids()[0].getUuid().toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //Attempt to connect to the server device
+            try {
                 Log.i(TAG, "Created socket");
                 btAdapter.cancelDiscovery();
                 socket.connect();
+                isConnected = true;
                 Log.i(TAG, "Connected");
-                DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+            } catch (IOException e) {
 
+                //If the connection failed, attempt fallback method instead
+                try {
+                    Log.i(TAG, "Attempting fallback");
+                    socket = (BluetoothSocket) btServer.getClass().getMethod("createInsecureRfcommSocket", new Class[]{int.class}).invoke(btServer, 1);
+                    socket.connect();
+                    isConnected = true;
+                    Log.i(TAG, "Fallback connected");
+                } catch (Exception ex) {
+                    Log.i(TAG, ex.getLocalizedMessage());
+                }
+            }
+            //Create the datastream, and start sending commands (from mainactivitys circularbuffer)
+            //Send one char at a time, with LATENCY milliseconds between
+            try {
+                DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+                char cmd;
                 while(isConnected) {
                     try {
-                        Log.i(TAG, "Writing to socket stream");
-                        dos.writeChars(Arrays.toString(mainActivity.getControllerCommands()));
-                        Log.i(TAG, "Going to sleep");
-                        sleep(500);
+                        //Read a char from the commandbuffer
+                        if((cmd = mainActivity.getControllerCommand()) == '-') {
+                            //If the command is '-' it is no command, so we sleep and then do it all
+                            //over again
+                            sleep(LATENCY);
+                            continue;
+                        }
+                        else {
+                            //If command is valid write it to the stream
+                            Log.i(TAG, "Writing to socket stream");
+                            dos.writeChar(cmd);
+                        }
                     } catch(IOException | InterruptedException e) {
                         Log.i(TAG, e.getLocalizedMessage());
+                        Log.i(TAG, "Error writing to stream, disconnecting");
+                        isConnected = false;
+                    }
+                    //TODO not sure if this is necessary anymore
+                    try {
+                        Log.i(TAG, "Going to sleep");
+                        sleep(LATENCY);
+                    } catch (InterruptedException e) {
+                        Log.i(TAG, "Sleep interrupted");
                     }
                 }
 
+                //Clean up
                 Log.i(TAG, "Closing stream and socket");
                 dos.flush();
                 dos.close();
                 socket.close();
+                Log.i(TAG, "Stream and socket closed");
 
             } catch(IOException e) {
                 Log.i(TAG, e.getLocalizedMessage());
             }
         }
     }
-
 }

@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         commandBuffer = new CircleBuffer(10);
+        //Initiate the BluetoothHandler
         BluetoothHandler.getInstance().setActivity(this);
         Log.i(TAG, "oncreate done");
     }
@@ -58,6 +59,13 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Called by BluetoothHandler when bluetooth gets enabled. Also calls connectnow to continue
+     * with the connect attempt
+     * @param requestCode request code
+     * @param resultCode result code
+     * @param data unused data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "Got activity result");
@@ -69,7 +77,7 @@ public class MainActivity extends AppCompatActivity
      * Called by button press or onActivityResult method
      * Enables bluetooth, and calls the connect method in the BluetoothHandler with the MAC-address
      * specified in textfield as argument (can be null)
-     * @param v
+     * @param v view that called this
      */
     public void connectNow(View v) {
         Log.i(TAG, "connectbutton pressed");
@@ -78,17 +86,21 @@ public class MainActivity extends AppCompatActivity
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         } else {
-            /*String MAC = null;
-            if(v != null)
-                MAC = ((TextView)v.findViewById(R.id.textMac)).getText().toString();
-            Log.i(TAG, "MAC address is " + MAC);*/
-            BluetoothHandler.getInstance().connect(null);
+            BluetoothHandler.getInstance().connect();
         }
     }
 
     public void addCommand(View v) {
         Log.i(TAG, "Adding command to buffer");
-        commandBuffer.add('1');
+        char cmd;
+        switch((String)v.getTag()) {
+            case "up": cmd = '0'; break;
+            case "right": cmd = '1'; break;
+            case "down": cmd = '2'; break;
+            case "left": cmd = '3'; break;
+            default: cmd = '-';
+        }
+        commandBuffer.add(cmd);
     }
     /**
      * Returns, in the correct order, what is currently in the circular buffer
@@ -97,5 +109,10 @@ public class MainActivity extends AppCompatActivity
     public char[] getControllerCommands() {
         Log.i(TAG, "Returning controller commands");
         return commandBuffer.getArray();
+    }
+
+    public char getControllerCommand() {
+        Log.i(TAG, "Returning controller command");
+        return commandBuffer.getChar();
     }
 }
