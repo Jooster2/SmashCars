@@ -28,4 +28,13 @@
         android:background="#ff5178"
         android:editable="true"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="AddCommand"
+        android:id="@+id/command"
+        android:layout_above="@+id/connButton"
+        android:layout_centerHorizontal="true"
+        android:onClick="addCommand"/>
+
 </RelativeLayout>

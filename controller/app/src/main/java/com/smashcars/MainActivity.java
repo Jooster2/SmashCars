@@ -13,7 +13,7 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity
 {
     private static final int REQUEST_ENABLE_BT = 1;
-    private static final String TAG = "main";
+    private static final String TAG = "mainactivity";
     private CircleBuffer commandBuffer;
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         commandBuffer = new CircleBuffer(10);
         BluetoothHandler.getInstance().setActivity(this);
+        Log.i(TAG, "oncreate done");
     }
 
     @Override
@@ -71,19 +72,24 @@ public class MainActivity extends AppCompatActivity
      * @param v
      */
     public void connectNow(View v) {
+        Log.i(TAG, "connectbutton pressed");
         if(!BluetoothHandler.getInstance().isEnabled()) {
             Log.i(TAG, "Bluetooth disabled, enabling it now");
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         } else {
-            String MAC = null;
+            /*String MAC = null;
             if(v != null)
                 MAC = ((TextView)v.findViewById(R.id.textMac)).getText().toString();
-            Log.i(TAG, "MAC address is " + MAC);
-            BluetoothHandler.getInstance().connect(MAC);
+            Log.i(TAG, "MAC address is " + MAC);*/
+            BluetoothHandler.getInstance().connect(null);
         }
     }
 
+    public void addCommand(View v) {
+        Log.i(TAG, "Adding command to buffer");
+        commandBuffer.add('1');
+    }
     /**
      * Returns, in the correct order, what is currently in the circular buffer
      * @return char-array with commands

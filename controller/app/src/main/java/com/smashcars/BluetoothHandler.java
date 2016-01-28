@@ -14,9 +14,10 @@ import java.util.UUID;
  * @author Joakim Schmidt
  */
 public class BluetoothHandler {
-    private static final String SERVER_MAC = "";
+    //Carls MAC-address
+    private static final String SERVER_MAC = "44:D4:E0:27:8F:AC";
     private static final UUID _UUID = java.util.UUID.fromString("6d357677-c1b7-4789-ac78-8f9f73486c38");
-    private static final String TAG = "bluetooth";
+    private static final String TAG = "bthandler";
 
     private MainActivity mainActivity;
     private BluetoothAdapter btAdapter;
@@ -68,7 +69,7 @@ public class BluetoothHandler {
      * @param MAC address to connect to
      */
     public void connect(String MAC) {
-        if(MAC == null)
+        //if(MAC == null)
             MAC = SERVER_MAC;
         Log.i(TAG, "Starting connection procedure");
         btServer = btAdapter.getRemoteDevice(MAC);
