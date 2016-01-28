@@ -71,7 +71,7 @@ public class MainFragment extends Fragment
         {
 
             Context context = getActivity();
-            CharSequence text = "GO LEFT!";
+            CharSequence text = "TURN LEFT!";
             int duration = Toast.LENGTH_SHORT;
 
             Toast toast = Toast.makeText(context, text, duration);
@@ -113,7 +113,7 @@ public class MainFragment extends Fragment
         {
 
             Context context = getActivity();
-            CharSequence text = "GO RIGHT!";
+            CharSequence text = "TURN RIGHT!";
             int duration = Toast.LENGTH_SHORT;
 
             Toast toast = Toast.makeText(context, text, duration);
@@ -155,7 +155,7 @@ public class MainFragment extends Fragment
         {
 
             Context context = getActivity();
-            CharSequence text = "GO BACK!";
+            CharSequence text = "GO BACKWARDS!";
             int duration = Toast.LENGTH_SHORT;
 
             Toast toast = Toast.makeText(context, text, duration);
