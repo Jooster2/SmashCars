@@ -23,221 +23,130 @@ public class Joystick {
     public static final int JOYSTICK_LEFT = 7;
     public static final int JOYSTICK_UPLEFT = 8;
 
-    private int joystick_ALPHA = 200;
-    private int LAYOUT_ALPHA = 200;
-    private int OFFSET = 0;
+    private int OFFSET = 50;
 
     private Context context;
     private ViewGroup layout;
     private LayoutParams params;
-
-    private int position_x = 0, position_y = 0, min_distance = 0;
-    private float distance = 0, angle = 0;
-
     private DrawCanvas draw;
     private Paint paint;
     private Bitmap joystick;
-    private int joystick_width, joystick_height;
 
-    private boolean touch_state = false;
+    private int joystick_width, joystick_height;
+    private int pos_x = 0, pos_y = 0, min_dis = 0; // min_dis states how far from the middle the joystick need to go in order to update
+    private float distance = 0, angle = 0; // distance from middle and angle
+
+    private boolean isTouched = false;
 
     public Joystick (Context context, ViewGroup layout) {
         this.context = context;
         this.layout = layout;
         draw = new DrawCanvas(context);
         paint = new Paint();
-        params = layout.getLayoutParams();
 
+        params = layout.getLayoutParams();
+        // Get the image of the joystick
         joystick = BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.joystick);
-        joystick_width = joystick.getWidth();
-        joystick_height = joystick.getHeight();
+                R.drawable.joystick_pressed);
+        joystick_width = params.width/2;
+        joystick_height = params.height/2;
+        // Create a scaled version (smaller than the background layout)
+        joystick = Bitmap.createScaledBitmap(joystick, joystick_width, joystick_height,
+                false);
     }
 
     public void drawJoystick(MotionEvent event) {
-        position_x = (int) (event.getX() - (params.width / 2));
-        position_y = (int) (event.getY() - (params.height / 2));
-        distance = (float) Math.sqrt(Math.pow(position_x, 2) + Math.pow(position_y, 2));
-        angle = (float) cal_angle(position_x, position_y);
 
+        pos_x = (int) (event.getX() - (params.width / 2));
+        pos_y = (int) (event.getY() - (params.height / 2));
+        distance = (float) Math.sqrt(Math.pow(pos_x, 2) + Math.pow(pos_y, 2));
+        angle = (float) calculateAngle(pos_x, pos_y);
 
-        if(event.getAction() == MotionEvent.ACTION_DOWN) {
+        // Get the motion event
+        int action = event.getAction();
+        // Depending on the event, do stuff
+        if(action == MotionEvent.ACTION_DOWN) {
             if(distance <= (params.width) - OFFSET) {
-                draw.position(params.width/2, params.height/2);
+                draw.position(event.getX(), event.getY());
                 draw();
-                touch_state = true;
+                isTouched = true;
             }
-        } else if(event.getAction() == MotionEvent.ACTION_MOVE && touch_state) {
+        }
+        else if(action == MotionEvent.ACTION_MOVE && isTouched) {
+            // If the joystick is inside of the pad
             if(distance <= (params.width / 2) - OFFSET) {
                 draw.position(event.getX(), event.getY());
                 draw();
-            } else if(distance > (params.width / 2) - OFFSET){
-                float x = (float) (Math.cos(Math.toRadians(cal_angle(position_x,
-                        position_y))) * ((params.width / 2) - OFFSET));
-                float y = (float) (Math.sin(Math.toRadians(cal_angle(position_x,
-                        position_y))) * ((params.height / 2) - OFFSET));
+            }
+            // If the joystick is outside of the pad
+            else if(distance > (params.width / 2) - OFFSET){
+                float x = (float) (Math.cos(Math.toRadians(calculateAngle(pos_x,
+                        pos_y))) * ((params.width / 2) - OFFSET));
+                float y = (float) (Math.sin(Math.toRadians(calculateAngle(pos_x,
+                        pos_y))) * ((params.height / 2) - OFFSET));
                 x += (params.width / 2);
                 y += (params.height / 2);
                 draw.position(x, y);
                 draw();
-            } else {
+            }
+            // Otherwise, just remove to joystick as to avoid clutter
+            else {
                 layout.removeView(draw);
             }
-        } else if(event.getAction() == MotionEvent.ACTION_UP) {
+        }
+        // If the joystick is released, remove the joystick
+        else if(action == MotionEvent.ACTION_UP) {
             layout.removeView(draw);
-            touch_state = false;
+            isTouched = false;
         }
-    }
-
-    public int[] getPosition() {
-        if(distance > min_distance && touch_state) {
-            return new int[] { position_x, position_y };
-        }
-        return new int[] { 0, 0 };
-    }
-
-    public int getX() {
-        if(distance > min_distance && touch_state) {
-            return position_x;
-        }
-        return 0;
-    }
-
-    public int getY() {
-        if(distance > min_distance && touch_state) {
-            return position_y;
-        }
-        return 0;
     }
 
     public float getAngle() {
-        if(distance > min_distance && touch_state) {
+        if(distance > min_dis && isTouched) {
             return angle;
         }
         return 0;
     }
 
-    public float getDistance() {
-        if(distance > min_distance && touch_state) {
-            return distance;
-        }
-        return 0;
-    }
-
-    public void setMinimumDistance(int minDistance) {
-        min_distance = minDistance;
-    }
-
-    public int getMinimumDistance() {
-        return min_distance;
-    }
-
-    public int get8Direction() {
-        if(distance > min_distance && touch_state) {
+    public int getDirection() {
+        if(distance > min_dis && isTouched) {
             if(angle >= 247.5 && angle < 292.5 ) {
                 return JOYSTICK_UP;
-            } else if(angle >= 292.5 && angle < 337.5 ) {
+            }
+            else if(angle >= 292.5 && angle < 337.5 ) {
                 return JOYSTICK_UPRIGHT;
-            } else if(angle >= 337.5 || angle < 22.5 ) {
+            }
+            else if(angle >= 337.5 || angle < 22.5 ) {
                 return JOYSTICK_RIGHT;
-            } else if(angle >= 22.5 && angle < 67.5 ) {
+            }
+            else if(angle >= 22.5 && angle < 67.5 ) {
                 return JOYSTICK_DOWNRIGHT;
-            } else if(angle >= 67.5 && angle < 112.5 ) {
+            }
+            else if(angle >= 67.5 && angle < 112.5 ) {
                 return JOYSTICK_DOWN;
-            } else if(angle >= 112.5 && angle < 157.5 ) {
+            }
+            else if(angle >= 112.5 && angle < 157.5 ) {
                 return JOYSTICK_DOWNLEFT;
-            } else if(angle >= 157.5 && angle < 202.5 ) {
+            }
+            else if(angle >= 157.5 && angle < 202.5 ) {
                 return JOYSTICK_LEFT;
-            } else if(angle >= 202.5 && angle < 247.5 ) {
+            }
+            else if(angle >= 202.5 && angle < 247.5 ) {
                 return JOYSTICK_UPLEFT;
             }
-        } else if(distance <= min_distance && touch_state) {
+        }
+        else if(distance <= min_dis && isTouched) {
             return JOYSTICK_NONE;
         }
         return 0;
     }
-
-    public int get4Direction() {
-        if(distance > min_distance && touch_state) {
-            if(angle >= 225 && angle < 315 ) {
-                return JOYSTICK_UP;
-            } else if(angle >= 315 || angle < 45 ) {
-                return JOYSTICK_RIGHT;
-            } else if(angle >= 45 && angle < 135 ) {
-                return JOYSTICK_DOWN;
-            } else if(angle >= 135 && angle < 225 ) {
-                return JOYSTICK_LEFT;
-            }
-        } else if(distance <= min_distance && touch_state) {
-            return JOYSTICK_NONE;
-        }
-        return 0;
+    private void draw() {
+        // When drawing a new joystick, remove old on to remove clutter
+        layout.removeView(draw);
+        layout.addView(draw);
     }
 
-    public void setOffset(int offset) {
-        OFFSET = offset;
-    }
-
-    public int getOffset() {
-        return OFFSET;
-    }
-
-    public void setJoystickAlpha(int alpha) {
-        joystick_ALPHA = alpha;
-        paint.setAlpha(alpha);
-    }
-
-    public int getJoystickAlpha() {
-        return joystick_ALPHA;
-    }
-
-    public void setLayoutAlpha(int alpha) {
-        LAYOUT_ALPHA = alpha;
-        layout.getBackground().setAlpha(alpha);
-    }
-
-    public int getLayoutAlpha() {
-        return LAYOUT_ALPHA;
-    }
-
-    public void setJoystickSize(int width, int height) {
-        joystick = Bitmap.createScaledBitmap(joystick, width, height, false);
-        joystick_width = joystick.getWidth();
-        joystick_height = joystick.getHeight();
-    }
-
-    public void setJoystickWidth(int width) {
-        joystick = Bitmap.createScaledBitmap(joystick, width, joystick_height, false);
-        joystick_width = joystick.getWidth();
-    }
-
-    public void setJoystickHeight(int height) {
-        joystick = Bitmap.createScaledBitmap(joystick, joystick_width, height, false);
-        joystick_height = joystick.getHeight();
-    }
-
-    public int getJoystickWidth() {
-        return joystick_width;
-    }
-
-    public int getJoystickHeight() {
-        return joystick_height;
-    }
-
-    public void setLayoutSize(int width, int height) {
-        params.width = width;
-        params.height = height;
-    }
-
-    public int getLayoutWidth() {
-        return params.width;
-    }
-
-    public int getLayoutHeight() {
-        return params.height;
-    }
-
-    private double cal_angle(float x, float y) {
+    private double calculateAngle(float x, float y) {
         if(x >= 0 && y >= 0)
             return Math.toDegrees(Math.atan(y / x));
         else if(x < 0 && y >= 0)
@@ -249,18 +158,11 @@ public class Joystick {
         return 0;
     }
 
-    private void draw() {
-        try {
-            layout.removeView(draw);
-        } catch (Exception e) { }
-        layout.addView(draw);
-    }
-
     private class DrawCanvas extends View{
         float x, y;
 
-        private DrawCanvas(Context mContext) {
-            super(mContext);
+        private DrawCanvas(Context context) {
+            super(context);
         }
 
         public void onDraw(Canvas canvas) {
