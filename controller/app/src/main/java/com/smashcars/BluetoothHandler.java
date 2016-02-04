@@ -16,6 +16,7 @@ import java.util.UUID;
 public class BluetoothHandler {
     //Carls MAC-address
     private static final String SERVER_MAC = "00:07:80:49:8D:0D";
+    private static final UUID uuid = UUID.fromString("a76070ab-55ed-515c-98c7-28c7757e81c2");
     private static final int LATENCY = 50;
     //private static final UUID _UUID = java.util.UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
     private static final String TAG = "bthandler";
@@ -126,7 +127,6 @@ public class BluetoothHandler {
             //Create a socket aimed for the server device
             try {
                 Log.i(TAG, "Attempting to get UUID");
-                UUID uuid = UUID.fromString("a76070ab-55ed-515c-98c7-28c7757e81c2");
                 //UUID uuid = btServer.getUuids()[0].getUuid();
                 Log.i(TAG, "Attempting to create socket");
                 socket = btServer.createRfcommSocketToServiceRecord(uuid);
