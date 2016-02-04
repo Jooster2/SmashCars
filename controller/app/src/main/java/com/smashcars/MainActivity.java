@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity
      * @return char-array with commands
      */
 
-    public int getControllerCommand() {
+    public Integer getControllerCommand() {
         Log.i(TAG, "Returning controller command");
         return commandBuffer.getNext();
     }

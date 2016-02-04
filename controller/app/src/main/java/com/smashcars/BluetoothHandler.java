@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,8 +16,8 @@ import java.util.UUID;
  */
 public class BluetoothHandler {
     //Carls MAC-address
-    private static final String SERVER_MAC = "00:07:80:49:8D:0D";
-    private static final UUID uuid = UUID.fromString("a76070ab-55ed-515c-98c7-28c7757e81c2");
+    private static final String SERVER_MAC = "00:06:66:7B:AC:2C";
+    //private static final UUID uuid = UUID.fromString("a76070ab-55ed-515c-98c7-28c7757e81c2");
     private static final int LATENCY = 50;
     //private static final UUID _UUID = java.util.UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
     private static final String TAG = "bthandler";
@@ -127,7 +128,8 @@ public class BluetoothHandler {
             //Create a socket aimed for the server device
             try {
                 Log.i(TAG, "Attempting to get UUID");
-                //UUID uuid = btServer.getUuids()[0].getUuid();
+                UUID uuid = btServer.getUuids()[0].getUuid();
+                Log.i(TAG, uuid.toString());
                 Log.i(TAG, "Attempting to create socket");
                 socket = btServer.createRfcommSocketToServiceRecord(uuid);
                 //Log.i(TAG, "UUID: " + btServer.getUuids()[0].getUuid().toString());
@@ -141,7 +143,7 @@ public class BluetoothHandler {
                 socket.connect();
                 isConnected = true;
                 Log.i(TAG, "Connected");
-            } catch (IOException e) {
+            } catch (Exception e) {
 
                 //If the connection failed, attempt fallback method instead
                 try {
@@ -157,12 +159,14 @@ public class BluetoothHandler {
             //Create the datastream, and start sending commands (from mainactivitys circularbuffer)
             //Send one char at a time, with LATENCY milliseconds between
             try {
+                Log.i(TAG, "Attempting to open stream");
                 DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-                int cmd;
+                //Toast.makeText(mainActivity.getBaseContext(), "Connected", Toast.LENGTH_SHORT);
+                Integer cmd;
                 while(isConnected) {
                     try {
                         //Read a char from the commandbuffer
-                        if((cmd = mainActivity.getControllerCommand()) == 0) {
+                        if((cmd = mainActivity.getControllerCommand()) == null) {
                             //If the command is 0 it is no command, so we sleep and then do it all
                             //over again
                             sleep(LATENCY);
@@ -170,8 +174,8 @@ public class BluetoothHandler {
                         }
                         else {
                             //If command is valid write it to the stream
-                            Log.i(TAG, "Writing to socket stream");
-                            dos.writeChar(cmd);
+                            Log.i(TAG, "Writing to socket stream: " + cmd);
+                            dos.writeShort(cmd);
                         }
                     } catch(IOException | InterruptedException e) {
                         Log.i(TAG, e.getLocalizedMessage());

@@ -63,7 +63,7 @@ public class MainFragment extends Fragment
                public void run()
                 {
                     toast.show();
-                    ((MainActivity)getActivity()).addCommand(0);
+                    ((MainActivity)getActivity()).addCommand(256+10);
                     mHandler.postDelayed(this, 0);
                 }
             };
@@ -192,7 +192,7 @@ public class MainFragment extends Fragment
                 public void run()
                 {
                     toast.show();
-                    ((MainActivity)getActivity()).addCommand(0);
+                    ((MainActivity)getActivity()).addCommand(256 + 70);
                     mHandler.postDelayed(this, 0);
                 }
             };
