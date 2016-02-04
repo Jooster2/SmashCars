@@ -14,13 +14,14 @@ public class MainActivity extends AppCompatActivity
 {
     private static final int REQUEST_ENABLE_BT = 1;
     private static final String TAG = "mainactivity";
-    private CircleBuffer commandBuffer;
+    //private CircleBuffer commandBuffer;
+    CircularArray<Integer> commandBuffer;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        commandBuffer = new CircleBuffer(10);
+        commandBuffer = new CircularArray<> (10);
         //Initiate the BluetoothHandler
         BluetoothHandler.getInstance().setActivity(this);
         Log.i(TAG, "oncreate done");
@@ -90,29 +91,20 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void addCommand(View v) {
+    public void addCommand(int cmd)
+    {
         Log.i(TAG, "Adding command to buffer");
-        char cmd;
-        switch((String)v.getTag()) {
-            case "up": cmd = '0'; break;
-            case "right": cmd = '1'; break;
-            case "down": cmd = '2'; break;
-            case "left": cmd = '3'; break;
-            default: cmd = '-';
-        }
         commandBuffer.add(cmd);
+
+
     }
     /**
      * Returns, in the correct order, what is currently in the circular buffer
      * @return char-array with commands
      */
-    public char[] getControllerCommands() {
-        Log.i(TAG, "Returning controller commands");
-        return commandBuffer.getArray();
-    }
 
-    public char getControllerCommand() {
+    public int getControllerCommand() {
         Log.i(TAG, "Returning controller command");
-        return commandBuffer.getChar();
+        return commandBuffer.getNext();
     }
 }

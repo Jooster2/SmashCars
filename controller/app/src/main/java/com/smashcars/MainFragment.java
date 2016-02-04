@@ -17,6 +17,8 @@ import android.content.Context;
  */
 public class MainFragment extends Fragment
 {
+    private CircleBuffer commandBuffer;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -61,6 +63,7 @@ public class MainFragment extends Fragment
                public void run()
                 {
                     toast.show();
+                    ((MainActivity)getActivity()).addCommand(0);
                     mHandler.postDelayed(this, 0);
                 }
             };
@@ -103,6 +106,7 @@ public class MainFragment extends Fragment
                 public void run()
                 {
                     toast.show();
+                    ((MainActivity)getActivity()).addCommand(135);
                     mHandler.postDelayed(this, 0);
                 }
             };
@@ -145,6 +149,7 @@ public class MainFragment extends Fragment
                 public void run()
                 {
                     toast.show();
+                    ((MainActivity)getActivity()).addCommand(45);
                     mHandler.postDelayed(this, 0);
                 }
             };
@@ -187,10 +192,12 @@ public class MainFragment extends Fragment
                 public void run()
                 {
                     toast.show();
+                    ((MainActivity)getActivity()).addCommand(0);
                     mHandler.postDelayed(this, 0);
                 }
             };
         });
+
         return view;
     }
 }

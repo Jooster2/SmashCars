@@ -158,12 +158,12 @@ public class BluetoothHandler {
             //Send one char at a time, with LATENCY milliseconds between
             try {
                 DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-                char cmd;
+                int cmd;
                 while(isConnected) {
                     try {
                         //Read a char from the commandbuffer
-                        if((cmd = mainActivity.getControllerCommand()) == '-') {
-                            //If the command is '-' it is no command, so we sleep and then do it all
+                        if((cmd = mainActivity.getControllerCommand()) == 0) {
+                            //If the command is 0 it is no command, so we sleep and then do it all
                             //over again
                             sleep(LATENCY);
                             continue;
