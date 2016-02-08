@@ -87,7 +87,11 @@ public class BluetoothHandler {
      * Closes the current connection
      */
     public void disconnect() {
-        activeThread.disconnect();
+        try {
+            activeThread.disconnect();
+        } catch(NullPointerException e) {
+            Log.i(TAG, "Failed disconnecting due to no activeThread object");
+        }
     }
 
     /**
@@ -162,7 +166,7 @@ public class BluetoothHandler {
                 Log.i(TAG, "Attempting to open stream");
                 DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
                 //Toast.makeText(mainActivity.getBaseContext(), "Connected", Toast.LENGTH_SHORT);
-                Integer cmd;
+                Short cmd;
                 while(isConnected) {
                     try {
                         //Read a char from the commandbuffer

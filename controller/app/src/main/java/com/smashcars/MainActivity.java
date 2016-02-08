@@ -14,8 +14,7 @@ public class MainActivity extends AppCompatActivity
 {
     private static final int REQUEST_ENABLE_BT = 1;
     private static final String TAG = "mainactivity";
-    //private CircleBuffer commandBuffer;
-    CircularArray<Integer> commandBuffer;
+    CircularArray<Short> commandBuffer;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -81,7 +80,7 @@ public class MainActivity extends AppCompatActivity
      * @param v view that called this
      */
     public void connectNow(View v) {
-        Log.i(TAG, "connectbutton pressed");
+        Log.i(TAG, "connect-button pressed");
         if(!BluetoothHandler.getInstance().isEnabled()) {
             Log.i(TAG, "Bluetooth disabled, enabling it now");
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -91,10 +90,15 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void disconnect(View v) {
+        Log.i(TAG, "disconnect-button pressed");
+        BluetoothHandler.getInstance().disconnect();
+    }
+
     public void addCommand(int cmd)
     {
         Log.i(TAG, "Adding command to buffer");
-        commandBuffer.add(cmd);
+        commandBuffer.add((short)cmd);
 
 
     }
@@ -103,7 +107,7 @@ public class MainActivity extends AppCompatActivity
      * @return char-array with commands
      */
 
-    public Integer getControllerCommand() {
+    public Short getControllerCommand() {
         Log.i(TAG, "Returning controller command");
         return commandBuffer.getNext();
     }

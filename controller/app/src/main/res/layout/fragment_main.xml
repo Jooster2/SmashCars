@@ -52,10 +52,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Connect"
-        android:onClick="connectNow"
         android:id="@+id/button5"
+        android:layout_marginTop="90dp"
         android:layout_below="@+id/button2"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="85dp"/>
+        android:layout_toStartOf="@+id/button4"
+        android:onClick="connectNow"/>
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Disconnect"
+        android:id="@+id/button6"
+        android:layout_alignTop="@+id/button5"
+        android:layout_toEndOf="@+id/textView"
+        android:onClick="disconnect"/>
 
 </RelativeLayout>
