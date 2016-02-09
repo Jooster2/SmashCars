@@ -10,64 +10,87 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity{
 
-    RelativeLayout layout_joystick; // Background layout of the joystick (the pad or whatever)
-    TextView angleText, directionText; // Writes out the angle (in degrees) and direction of the joystick
-    Joystick joystick; // The actual joystick (smaller version that goes on top of the pad)
+    RelativeLayout horizontal_joystick, vertical_joystick; // Background layout of the joystick (the pad or whatever)
+    TextView xposText, yposText, directionText, directionText2; // Writes out the angle (in degrees) and direction of the joystick
+    HorizontalJoystick h_joystick; // The actual joystick (smaller version that goes on top of the pad)
+    VerticalJoystick v_joystick;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        angleText = (TextView)findViewById(R.id.angleText);
+        xposText = (TextView)findViewById(R.id.xposText);
+        yposText = (TextView)findViewById(R.id.yposText);
+        directionText2 = (TextView)findViewById(R.id.directionText2);
         directionText = (TextView)findViewById(R.id.directionText);
-        layout_joystick = (RelativeLayout)findViewById(R.id.layout_joystick);
+        horizontal_joystick = (RelativeLayout)findViewById(R.id.horizontal_joystick);
+        vertical_joystick = (RelativeLayout)findViewById(R.id.vertical_joystick);
 
-        joystick = new Joystick(getApplicationContext(),layout_joystick);
+        h_joystick = new HorizontalJoystick(getApplicationContext(),horizontal_joystick);
+        v_joystick = new VerticalJoystick(getApplicationContext(),vertical_joystick);
 
-        layout_joystick.setOnTouchListener(new OnTouchListener() {
+        horizontal_joystick.setOnTouchListener(new OnTouchListener() {
             public boolean onTouch(View view, MotionEvent event) {
 
                 // Send the motion event to the Joystick class to draw a new joystick
-                joystick.drawJoystick(event);
+                h_joystick.drawJoystick(event);
                 // Get the action event
                 int action = event.getAction();
                 // If the joystick is touched or moved, do stuff
                 if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-                    angleText.setText("Angle : " + String.valueOf(joystick.getAngle()));
-                    int direction = joystick.getDirection();
+                    xposText.setText("X: " + h_joystick.getXpos());
+                    double x_pos = h_joystick.getXpos();
                     // Depending on the direction of the joystick, do stuff
-                    if (direction == Joystick.JOYSTICK_UP) {
-                        directionText.setText("Direction: Up");
-                    }
-                    else if (direction == Joystick.JOYSTICK_UPRIGHT) {
-                        directionText.setText("Direction: Up Right");
-                    }
-                    else if (direction == Joystick.JOYSTICK_RIGHT) {
-                        directionText.setText("Direction: Right");
-                    }
-                    else if (direction == Joystick.JOYSTICK_DOWNRIGHT) {
-                        directionText.setText("Direction: Down Right");
-                    }
-                    else if (direction == Joystick.JOYSTICK_DOWN) {
-                        directionText.setText("Direction: Down");
-                    }
-                    else if (direction == Joystick.JOYSTICK_DOWNLEFT) {
-                        directionText.setText("Direction: Down Left");
-                    }
-                    else if (direction == Joystick.JOYSTICK_LEFT) {
+                    if (x_pos < 0) {
                         directionText.setText("Direction: Left");
                     }
-                    else if (direction == Joystick.JOYSTICK_UPLEFT) {
-                        directionText.setText("Direction: Up Left");
+
+                    else if (x_pos > 0) {
+                        directionText.setText("Direction: Right");
                     }
-                    else if (direction == Joystick.JOYSTICK_NONE) {
+
+                    else {
                         directionText.setText("Direction: Center");
                     }
                 }
                 // When the joystick is released, reset
                 else if (action == MotionEvent.ACTION_UP) {
-                    angleText.setText("Angle:");
+                    xposText.setText("X:");
                     directionText.setText("Direction:");
+                }
+                return true;
+            }
+        });
+
+
+        vertical_joystick.setOnTouchListener(new OnTouchListener() {
+            public boolean onTouch(View view, MotionEvent event) {
+
+                // Send the motion event to the Joystick class to draw a new joystick
+                v_joystick.drawJoystick(event);
+                // Get the action event
+                int action = event.getAction();
+                // If the joystick is touched or moved, do stuff
+                if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
+                    yposText.setText("Y: " + v_joystick.getYpos());
+                    double y_pos = v_joystick.getYpos();
+                    // Depending on the direction of the joystick, do stuff
+                    if (y_pos < 0) {
+                        directionText2.setText("Direction: Up");
+                    }
+
+                    else if (y_pos > 0) {
+                        directionText2.setText("Direction: Down");
+                    }
+
+                    else {
+                        directionText2.setText("Direction: Center");
+                    }
+                }
+                // When the joystick is released, reset
+                else if (action == MotionEvent.ACTION_UP) {
+                    yposText.setText("Y:");
+                    directionText2.setText("Direction:");
                 }
                 return true;
             }

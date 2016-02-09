@@ -21,7 +21,7 @@
     <RelativeLayout
         android:layout_height="150dp"
         android:layout_width="150dp"
-        android:id="@+id/layout_joystick"
+        android:id="@+id/horizontal_joystick"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:background="@drawable/joystick"
@@ -31,23 +31,56 @@
         android:layout_marginBottom="40dp">
     </RelativeLayout>
 
+    <RelativeLayout
+        android:layout_height="150dp"
+        android:layout_width="150dp"
+        android:id="@+id/vertical_joystick"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:background="@drawable/joystick"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="false"
+        android:layout_marginLeft="40dp"
+        android:layout_marginBottom="40dp" />
+
     <TextView
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:id="@+id/directionText"
         android:textSize="20dp"
         android:textColor="#444444"
-        android:text="Direction"
-        android:layout_centerVertical="true"
-        android:layout_alignStart="@+id/layout_joystick" />
+        android:text="Direction: "
+        android:layout_below="@+id/xposText"
+        android:layout_alignStart="@+id/horizontal_joystick" />
 
     <TextView
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:id="@+id/angleText"
+        android:id="@+id/xposText"
         android:textSize="20dp"
         android:textColor="#444444"
-        android:text="Angle"
-        android:layout_above="@+id/directionText"
+        android:text="X: "
+        android:layout_below="@+id/linearLayout1"
         android:layout_alignStart="@+id/directionText" />
+
+    <TextView
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:id="@+id/directionText2"
+        android:textSize="20dp"
+        android:textColor="#444444"
+        android:text="Direction: "
+        android:layout_below="@+id/yposText"
+        android:layout_alignStart="@+id/vertical_joystick" />
+
+    <TextView
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:id="@+id/yposText"
+        android:textSize="20dp"
+        android:textColor="#444444"
+        android:text="Y: "
+        android:layout_below="@+id/linearLayout1"
+        android:layout_alignStart="@+id/directionText2" />
+
 </RelativeLayout>
