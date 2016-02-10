@@ -26,8 +26,8 @@ public class MainActivity extends Activity{
         horizontal_joystick = (RelativeLayout)findViewById(R.id.horizontal_joystick);
         vertical_joystick = (RelativeLayout)findViewById(R.id.vertical_joystick);
 
-        h_joystick = new HorizontalJoystick(getApplicationContext(),horizontal_joystick);
-        v_joystick = new VerticalJoystick(getApplicationContext(),vertical_joystick);
+        h_joystick = new HorizontalJoystick(getApplicationContext(),horizontal_joystick, 0.15);
+        v_joystick = new VerticalJoystick(getApplicationContext(),vertical_joystick, 0.3);
 
         horizontal_joystick.setOnTouchListener(new OnTouchListener() {
             public boolean onTouch(View view, MotionEvent event) {

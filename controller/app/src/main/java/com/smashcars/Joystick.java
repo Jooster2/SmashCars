@@ -15,8 +15,6 @@ import java.math.RoundingMode;
 
 public class Joystick {
 
-    protected double MIN_DIST_TO_MID = 0.3; // States the minimum distance position need from the middle
-
     protected Context context;
     protected RelativeLayout layout;
     protected LayoutParams params;
@@ -28,6 +26,7 @@ public class Joystick {
     protected double position = 0; // Position of the joystick [-1,1] = {x,y in R | -1 <= x,y <= 1}
 
     protected boolean isTouched = false; // Checks if joystick
+    protected boolean exceededMinDis = false; // Checks if minimum distance has been exceeded
 
     public Joystick (Context context, RelativeLayout layout) {
         this.context = context;
@@ -53,11 +52,7 @@ public class Joystick {
         BigDecimal bd = new BigDecimal(position);
         bd = bd.setScale(2, RoundingMode.HALF_UP);
         position = bd.doubleValue();
-        // Check if the position is far enough from the middle
-        if(position > MIN_DIST_TO_MID || position < (-1)*MIN_DIST_TO_MID)
-            return position;
-        else
-            return 0;
+        return position;
     }
 
     public boolean checkInsideBoundries() {
