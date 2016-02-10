@@ -38,8 +38,8 @@ public class MainActivity extends Activity{
                 int action = event.getAction();
                 // If the joystick is touched or moved, do stuff
                 if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-                    xposText.setText("X: " + h_joystick.getXpos());
-                    double x_pos = h_joystick.getXpos();
+                    xposText.setText("X: " + h_joystick.getPosition());
+                    double x_pos = h_joystick.getPosition();
                     // Depending on the direction of the joystick, do stuff
                     if (x_pos < 0) {
                         directionText.setText("Direction: Left");
@@ -72,14 +72,14 @@ public class MainActivity extends Activity{
                 int action = event.getAction();
                 // If the joystick is touched or moved, do stuff
                 if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-                    yposText.setText("Y: " + v_joystick.getYpos());
-                    double y_pos = v_joystick.getYpos();
+                    yposText.setText("Y: " + v_joystick.getPosition());
+                    double y_pos = v_joystick.getPosition();
                     // Depending on the direction of the joystick, do stuff
-                    if (y_pos < 0) {
+                    if (y_pos > 0) {
                         directionText2.setText("Direction: Up");
                     }
 
-                    else if (y_pos > 0) {
+                    else if (y_pos < 0) {
                         directionText2.setText("Direction: Down");
                     }
 

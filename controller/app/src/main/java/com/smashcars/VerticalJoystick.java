@@ -2,11 +2,7 @@ package com.smashcars;
 
 import android.content.Context;
 import android.view.MotionEvent;
-import android.view.ViewGroup;
 import android.widget.RelativeLayout;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /**
  * Created by Jonathan on 2016-02-09.
@@ -22,23 +18,19 @@ public class VerticalJoystick extends Joystick {
 
         // Get the motion event
         int action = event.getAction();
-        // If touchscreen is pressed
+
+        position = (double)(-1)*(event.getY() - params.height/2)/(params.height/2);
+
+        // If the joystick pad is touched, draw a joystick
         if(action == MotionEvent.ACTION_DOWN) {
-
-            // If the touchpad area is pressed, draw a joystick
-            if(checkInside(event)) {
-                position = (double)(event.getY() - params.height/2)/(params.height/2);
-                draw.position(params.width/2, event.getY());
-                draw();
-                isTouched = true;
-            }
-
-            // Else, dont draw a joystick
+            draw.position(params.width/2, event.getY());
+            draw();
+            isTouched = true;
         }
+        // If the finger moves over the joystick pad, draw a new joystick
         else if(action == MotionEvent.ACTION_MOVE && isTouched) {
             // If the joystick is inside of the pad
-            if(checkInside(event)) {
-                position = (double)(event.getY() - params.width/2)/(params.width/2);
+            if(checkInsideBoundries()) {
                 draw.position(params.width/2, event.getY());
                 draw();
             }
@@ -46,12 +38,12 @@ public class VerticalJoystick extends Joystick {
             else {
                 if(position < 0) {
                     position = -1;
-                    draw.position(params.width/2, 0);
+                    draw.position(params.width/2, params.height);
                     draw();
                 }
                 else if(position > 0) {
                     position = 1;
-                    draw.position(params.width/2, params.height);
+                    draw.position(params.width/2, 0);
                     draw();
                 }
             }
@@ -63,13 +55,5 @@ public class VerticalJoystick extends Joystick {
         }
     }
 
-    public double getYpos() {
-        BigDecimal bd = new BigDecimal(position);
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
-        position = bd.doubleValue();
-        if(enoughDistance(position))
-            return position;
-        else
-            return 0;
-    }
+    public double getPosition() { return super.getPosition(); }
 }

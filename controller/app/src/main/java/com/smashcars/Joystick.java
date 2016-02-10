@@ -10,7 +10,12 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.RelativeLayout;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public class Joystick {
+
+    protected double MIN_DIST_TO_MID = 0.3; // States the minimum distance position need from the middle
 
     protected Context context;
     protected RelativeLayout layout;
@@ -20,8 +25,7 @@ public class Joystick {
     protected Bitmap joystick;
 
     protected int joystick_width, joystick_height; // Size of the joystick
-    protected double position = 0, min_dis = 0.3; // min_dis states how far from the middle the joystick need to go in order to update
-    protected int min_x, max_x, min_y, max_y; // The min/max x and y values of the layout
+    protected double position = 0; // Position of the joystick [-1,1] = {x,y in R | -1 <= x,y <= 1}
 
     protected boolean isTouched = false; // Checks if joystick
 
@@ -33,11 +37,7 @@ public class Joystick {
 
         // Get the width/height of the layout
         params = layout.getLayoutParams();
-        // Set min/max x and y value
-        min_x = 0 - params.width/2;
-        max_x = params.width/2;
-        min_y = 0 - params.height/2;
-        max_y = params.height/2;
+
         // Get the image of the joystick
         joystick = BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.joystick_pressed);
@@ -49,25 +49,22 @@ public class Joystick {
                 false);
     }
 
-    protected boolean checkInside(MotionEvent event) {
-        if(((event.getX() - params.width/2) > min_x) &&
-                (event.getX() - params.width/2) < max_x) {
-
-            if(((event.getY() - params.height/2) > min_y) &&
-                    ((event.getY() - params.height/2) < max_y)) {
-                return true;
-            }
-            return false;
-        }
-        return false;
+    protected double getPosition() {
+        BigDecimal bd = new BigDecimal(position);
+        bd = bd.setScale(2, RoundingMode.HALF_UP);
+        position = bd.doubleValue();
+        // Check if the position is far enough from the middle
+        if(position > MIN_DIST_TO_MID || position < (-1)*MIN_DIST_TO_MID)
+            return position;
+        else
+            return 0;
     }
 
-    protected boolean enoughDistance(double position) {
-        if((position > min_dis) || (position < (-1)*min_dis)) {
+    public boolean checkInsideBoundries() {
+        if(position >= -1 && position <= 1) {
             return true;
         }
         return false;
-
     }
 
     protected void draw() {
