@@ -1,4 +1,4 @@
-package com.smashcars;
+package com.smashcars.joystick;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -10,6 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.smashcars.core.MainActivity;
+import com.smashcars.R;
 
 /**
  * Created by Jonathan on 2016-02-10.
@@ -24,7 +27,8 @@ public class JoystickFragment extends Fragment{
     private static final int MOTOR_FORWARD = 768;
     private static final int MOTOR_BACKWARD = 256;
     private static final int MOTOR_FULL_SPEED = 255;
-
+    int lastMotor = 256;
+    int lastServo = 90;
     private int previousValue = 0;
     RelativeLayout horizontal_joystick, vertical_joystick; // Background layout of the joystick (the pad or whatever)
     TextView xposText, yposText, directionText, directionText2; // Writes out the angle (in degrees) and direction of the joystick
@@ -54,6 +58,7 @@ public class JoystickFragment extends Fragment{
                 // Send the motion event to the Joystick class to draw a new joystick
                 h_joystick.drawJoystick(event);
                 // Get the action event
+
                 int action = event.getAction();
                 int returnData = 0;
                 // If the joystick is touched or moved, do stuff
@@ -64,26 +69,32 @@ public class JoystickFragment extends Fragment{
                     if (x_pos < 0) {
                         returnData = SERVO_STRAIGHT_AHEAD + (int)(SERVO_MAXIMUM_ANGLE  * x_pos);
                         directionText.setText("Direction: Left");
+                        lastServo = returnData;
                     } else if (x_pos >= 0) {
-                        returnData = SERVO_STRAIGHT_AHEAD + (int)(SERVO_MAXIMUM_ANGLE  * x_pos);
+                        returnData = SERVO_STRAIGHT_AHEAD + (int) (SERVO_MAXIMUM_ANGLE * x_pos);
                         directionText.setText("Direction: Right");
+                        lastServo = returnData;
                     }
-                    //activity.addCommand(returnData);
+                    if(previousValue != returnData) {
+                        Log.d(TAG, "Servo data: " + returnData);
+                        activity.addCommand(returnData);
+                        previousValue = returnData;
+                    }
                 }
                 // When the joystick is released, reset
                 else if (action == MotionEvent.ACTION_UP) {
                     returnData = SERVO_STRAIGHT_AHEAD;
+
                     //for(int i = 0 ; i <= 20; i++)
                        // activity.addCommand(returnData);
                     xposText.setText("X:");
                     directionText.setText("Direction:");
+                    activity.stopServo(lastMotor);
+                    lastServo = 90;
+
                 }
 
-                if(previousValue != returnData) {
-                    Log.d(TAG, "Servo data: " + returnData);
-                    activity.addCommand(returnData);
-                    previousValue = returnData;
-                }
+
                 return true;
             }
         });
@@ -104,9 +115,18 @@ public class JoystickFragment extends Fragment{
                     if (y_pos >= 0) {
                         returnData = MOTOR_FORWARD + (int)(MOTOR_FULL_SPEED * y_pos);
                         directionText2.setText("Direction: Up");
+                        lastMotor = returnData;
+
                     } else if (y_pos < 0) {
                         returnData = MOTOR_BACKWARD + (int)(MOTOR_FULL_SPEED  * (-1) * y_pos);
                         directionText2.setText("Direction: Down");
+                        lastMotor = returnData;
+                    }
+
+                    if(previousValue != returnData) {
+                        Log.d(TAG, "Motor data: " + returnData);
+                        activity.addCommand(returnData);
+                        previousValue = returnData;
                     }
                 }
                 // When the joystick is released, reset
@@ -117,13 +137,10 @@ public class JoystickFragment extends Fragment{
                         //activity.addCommand(returnData);
                     yposText.setText("Y:");
                     directionText2.setText("Direction:");
+                    activity.stopMotor(lastServo);
+                    lastMotor = 256;
                 }
 
-                if(previousValue != returnData) {
-                    Log.d(TAG, "Motor data: " + returnData);
-                    activity.addCommand(returnData);
-                    previousValue = returnData;
-                }
                 return true;
             }
         });

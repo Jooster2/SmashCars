@@ -1,5 +1,5 @@
 
-package com.smashcars;
+package com.smashcars.utils;
 
 import java.util.ArrayList;
 import android.util.Log;
@@ -69,7 +69,7 @@ public class CircularArray<E> extends ArrayList<E> {
     @Override
     public synchronized boolean add(E e) {
         super.set(writePtr, e);
-        Log.i(TAG, "Adding " + e);
+        Log.i(TAG, "Adding " + e + " at " + writePtr);
         writePtr++;
         if(writePtr >= capacity)
             writePtr = 0;
@@ -110,7 +110,10 @@ public class CircularArray<E> extends ArrayList<E> {
         	i++;
         	moveReadPtr();
         }
-        moveReadPtr();
+
+        if(temp != null)
+            Log.i(TAG, "Getting " + temp + " at " + readPtr);
+
         return temp;
     }
     
@@ -151,6 +154,18 @@ public class CircularArray<E> extends ArrayList<E> {
     	if(index > capacity)
     		index %= capacity;
         return super.set(index, null);
+    }
+
+    /**
+     * Removes all the elements in the CircularArray, and sets all indexes to null
+     */
+    @Override
+    public synchronized void clear() {
+        for(int i = 0; i < capacity; i++) {
+            super.set(i, null);
+        }
+        writePtr = 0;
+        readPtr = 0;
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.smashcars;
+package com.smashcars.core;
 
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
@@ -9,7 +9,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+
+import com.smashcars.utils.CircularArray;
+import com.smashcars.R;
+import com.smashcars.joystick.JoystickFragment;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -113,7 +116,7 @@ public class MainActivity extends AppCompatActivity
     public synchronized void addCommand(int cmd)
     {
         Log.i(TAG, "Adding command to buffer");
-        commandBuffer.add((short)cmd);
+        commandBuffer.add((short) cmd);
 
 
     }
@@ -125,5 +128,29 @@ public class MainActivity extends AppCompatActivity
     public Short getControllerCommand() {
         //Log.i(TAG, "Returning controller command");
         return commandBuffer.getNext();
+    }
+
+    /**
+     * Stops the servo by clearing the command buffer and then setting the two next values to
+     * 90 for servo reset, and last used motor value from parameter
+     * @param motorValue the last used value for the motor
+     */
+    public void stopServo(int motorValue) {
+        commandBuffer.clear();
+        commandBuffer.add((short) 90);
+        commandBuffer.add((short)motorValue);
+        Log.i(TAG, "Stopped servo");
+    }
+
+    /**
+     * Stops the motor by clearing the command buffer and then setting the two next values to
+     * 256 for motor reset, and last used servo value from parameter
+     * @param servoValue the last used value for the servo
+     */
+    public void stopMotor(int servoValue) {
+        commandBuffer.clear();
+        commandBuffer.add((short) 256);
+        commandBuffer.add((short)servoValue);
+        Log.i(TAG, "Stopped motor");
     }
 }

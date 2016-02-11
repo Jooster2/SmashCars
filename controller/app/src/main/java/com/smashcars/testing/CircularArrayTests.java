@@ -2,7 +2,7 @@ package com.smashcars.testing;
 
 import android.test.AndroidTestCase;
 
-import com.smashcars.CircularArray;
+import com.smashcars.utils.CircularArray;
 
 /**
  * Tests for the CircularArray and its various methods.
