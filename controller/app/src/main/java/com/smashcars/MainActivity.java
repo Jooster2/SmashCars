@@ -1,5 +1,6 @@
 package com.smashcars;
 
+import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -13,17 +14,25 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity
 {
     private static final int REQUEST_ENABLE_BT = 1;
-    private static final String TAG = "mainactivity";
+    private static final String TAG = "MainActivity";
+
     CircularArray<Short> commandBuffer;
+    FragmentManager fragmentManager;
+    JoystickFragment joystickFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         commandBuffer = new CircularArray<> (10);
         //Initiate the BluetoothHandler
         BluetoothHandler.getInstance().setActivity(this);
-        Log.i(TAG, "oncreate done");
+
+        fragmentManager = getFragmentManager();
+
+        Log.i(TAG, "onCreate done");
     }
 
     @Override
@@ -86,8 +95,13 @@ public class MainActivity extends AppCompatActivity
             Log.i(TAG, "Bluetooth disabled, enabling it now");
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+
         } else {
             BluetoothHandler.getInstance().connect();
+
+            joystickFragment = new JoystickFragment();
+            fragmentManager.beginTransaction()
+                    .add(R.id.fragment_container, joystickFragment).commit();
         }
     }
 
@@ -96,7 +110,7 @@ public class MainActivity extends AppCompatActivity
         BluetoothHandler.getInstance().disconnect();
     }
 
-    public void addCommand(int cmd)
+    public synchronized void addCommand(int cmd)
     {
         Log.i(TAG, "Adding command to buffer");
         commandBuffer.add((short)cmd);
@@ -109,7 +123,7 @@ public class MainActivity extends AppCompatActivity
      */
 
     public Short getControllerCommand() {
-        Log.i(TAG, "Returning controller command");
+        //Log.i(TAG, "Returning controller command");
         return commandBuffer.getNext();
     }
 }

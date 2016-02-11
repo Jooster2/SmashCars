@@ -1,4 +1,6 @@
 package com.smashcars;
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 /**
@@ -66,6 +68,7 @@ public class CircularArray<E> extends ArrayList<E> {
     @Override
     public boolean add(E e) {
         super.set(writePtr, e);
+        Log.i(TAG, "Adding " + e);
         writePtr++;
         if(writePtr >= capacity)
             writePtr = 0;
@@ -86,6 +89,8 @@ public class CircularArray<E> extends ArrayList<E> {
      */
     public E getNext() {
         E temp = remove(readPtr);
+        if(temp != null)
+            Log.i(TAG, "Getting " + temp);
         while(super.get(readPtr) == null) {
             readPtr++;
             if(readPtr >= capacity)
