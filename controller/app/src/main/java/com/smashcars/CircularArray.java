@@ -1,5 +1,8 @@
-package circularArray;
+
+package com.smashcars;
+
 import java.util.ArrayList;
+import android.util.Log;
 import java.util.List;
 /**
  * A Circular Array, where the element after the last is the first.
@@ -66,6 +69,7 @@ public class CircularArray<E> extends ArrayList<E> {
     @Override
     public synchronized boolean add(E e) {
         super.set(writePtr, e);
+        Log.i(TAG, "Adding " + e);
         writePtr++;
         if(writePtr >= capacity)
             writePtr = 0;

@@ -10,13 +10,15 @@ import android.widget.RelativeLayout;
 
 public class VerticalJoystick extends Joystick {
 
-    protected double MIN_DIST_TO_MID = 0; // States the minimum distance position need from the middle
+    protected double min_dis = 0; // States the minimum distance position need from the middle
 
     public VerticalJoystick (Context context, RelativeLayout layout, double min_dis) {
         super(context, layout);
         if(min_dis >= 0) {
-            MIN_DIST_TO_MID = min_dis;
+            this.min_dis = min_dis;
         }
+        draw.position(params.width/2, params.height/2);
+        draw();
     }
 
     public void drawJoystick(MotionEvent event) {
@@ -55,8 +57,9 @@ public class VerticalJoystick extends Joystick {
             }
         }
         // If the joystick is released, remove the joystick
-        else {
-            layout.removeView(draw);
+        else if (action == MotionEvent.ACTION_UP){
+            draw.position(params.width/2, params.height/2);
+            draw();
             isTouched = false;
             position = 0;
         }
@@ -65,7 +68,7 @@ public class VerticalJoystick extends Joystick {
     public double getPosition() {
 
         // Check if the position is far enough from the middle
-        if(position > MIN_DIST_TO_MID || position < (-1) * MIN_DIST_TO_MID) {
+        if(position > min_dis || position < (-1) * min_dis) {
             return super.getPosition();
         }
         return 0;

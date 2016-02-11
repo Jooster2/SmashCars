@@ -3,6 +3,7 @@ package com.smashcars;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,95 +16,118 @@ import android.widget.TextView;
  */
 public class JoystickFragment extends Fragment{
 
+    private static final String TAG = "JoystickFragment";
 
-        RelativeLayout horizontal_joystick, vertical_joystick; // Background layout of the joystick (the pad or whatever)
-        TextView xposText, yposText, directionText, directionText2; // Writes out the angle (in degrees) and direction of the joystick
-        HorizontalJoystick h_joystick; // The actual joystick (smaller version that goes on top of the pad)
-        VerticalJoystick v_joystick;
+    private static final int SERVO_STRAIGHT_AHEAD = 90;
+    private static final int SERVO_MAXIMUM_ANGLE = 35;
+    private static final int MOTOR_STOP = 256;
+    private static final int MOTOR_FORWARD = 768;
+    private static final int MOTOR_BACKWARD = 256;
+    private static final int MOTOR_FULL_SPEED = 255;
 
-        @Nullable
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    private int previousValue = 0;
+    RelativeLayout horizontal_joystick, vertical_joystick; // Background layout of the joystick (the pad or whatever)
+    TextView xposText, yposText, directionText, directionText2; // Writes out the angle (in degrees) and direction of the joystick
+    HorizontalJoystick h_joystick; // The actual joystick (smaller version that goes on top of the pad)
+    VerticalJoystick v_joystick;
 
-            View view = inflater.inflate(R.layout.joystick_fragment, container, false);
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-            xposText = (TextView)view.findViewById(R.id.xposText);
-            yposText = (TextView)view.findViewById(R.id.yposText);
-            directionText2 = (TextView)view.findViewById(R.id.directionText2);
-            directionText = (TextView)view.findViewById(R.id.directionText);
-            horizontal_joystick = (RelativeLayout)view.findViewById(R.id.horizontal_joystick);
-            vertical_joystick = (RelativeLayout)view.findViewById(R.id.vertical_joystick);
+        View view = inflater.inflate(R.layout.joystick_fragment, container, false);
 
-            h_joystick = new HorizontalJoystick(getActivity().getApplicationContext(),horizontal_joystick, 0);
-            v_joystick = new VerticalJoystick(getActivity().getApplicationContext(),vertical_joystick, 0.3);
+        final MainActivity activity = (MainActivity)getActivity();
 
-            horizontal_joystick.setOnTouchListener(new View.OnTouchListener() {
-                public boolean onTouch(View view, MotionEvent event) {
+        xposText = (TextView)view.findViewById(R.id.xposText);
+        yposText = (TextView)view.findViewById(R.id.yposText);
+        directionText2 = (TextView)view.findViewById(R.id.directionText2);
+        directionText = (TextView)view.findViewById(R.id.directionText);
+        horizontal_joystick = (RelativeLayout)view.findViewById(R.id.horizontal_joystick);
+        vertical_joystick = (RelativeLayout)view.findViewById(R.id.vertical_joystick);
 
-                    // Send the motion event to the Joystick class to draw a new joystick
-                    h_joystick.drawJoystick(event);
-                    // Get the action event
-                    int action = event.getAction();
-                    // If the joystick is touched or moved, do stuff
-                    if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-                        xposText.setText("X: " + h_joystick.getPosition());
-                        double x_pos = h_joystick.getPosition();
-                        // Depending on the direction of the joystick, do stuff
-                        if (x_pos < 0) {
-                            directionText.setText("Direction: Left");
-                        }
+        h_joystick = new HorizontalJoystick(getActivity().getApplicationContext(),horizontal_joystick, 0);
+        v_joystick = new VerticalJoystick(getActivity().getApplicationContext(),vertical_joystick, 0.3);
 
-                        else if (x_pos > 0) {
-                            directionText.setText("Direction: Right");
-                        }
-
-                        else {
-                            directionText.setText("Direction: Center");
-                        }
+        horizontal_joystick.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View view, MotionEvent event) {
+                // Send the motion event to the Joystick class to draw a new joystick
+                h_joystick.drawJoystick(event);
+                // Get the action event
+                int action = event.getAction();
+                int returnData = 0;
+                // If the joystick is touched or moved, do stuff
+                if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
+                    xposText.setText("X: " + h_joystick.getPosition());
+                    double x_pos = h_joystick.getPosition();
+                    // Depending on the direction of the joystick, do stuff
+                    if (x_pos < 0) {
+                        returnData = SERVO_STRAIGHT_AHEAD + (int)(SERVO_MAXIMUM_ANGLE  * x_pos);
+                        directionText.setText("Direction: Left");
+                    } else if (x_pos >= 0) {
+                        returnData = SERVO_STRAIGHT_AHEAD + (int)(SERVO_MAXIMUM_ANGLE  * x_pos);
+                        directionText.setText("Direction: Right");
                     }
-                    // When the joystick is released, reset
-                    else if (action == MotionEvent.ACTION_UP) {
-                        xposText.setText("X:");
-                        directionText.setText("Direction:");
-                    }
-                    return true;
+                    //activity.addCommand(returnData);
                 }
-            });
-
-
-            vertical_joystick.setOnTouchListener(new View.OnTouchListener() {
-                public boolean onTouch(View view, MotionEvent event) {
-
-                    // Send the motion event to the Joystick class to draw a new joystick
-                    v_joystick.drawJoystick(event);
-                    // Get the action event
-                    int action = event.getAction();
-                    // If the joystick is touched or moved, do stuff
-                    if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-                        yposText.setText("Y: " + v_joystick.getPosition());
-                        double y_pos = v_joystick.getPosition();
-                        // Depending on the direction of the joystick, do stuff
-                        if (y_pos > 0) {
-                            directionText2.setText("Direction: Up");
-                        }
-
-                        else if (y_pos < 0) {
-                            directionText2.setText("Direction: Down");
-                        }
-
-                        else {
-                            directionText2.setText("Direction: Center");
-                        }
-                    }
-                    // When the joystick is released, reset
-                    else if (action == MotionEvent.ACTION_UP) {
-                        yposText.setText("Y:");
-                        directionText2.setText("Direction:");
-                    }
-                    return true;
+                // When the joystick is released, reset
+                else if (action == MotionEvent.ACTION_UP) {
+                    returnData = SERVO_STRAIGHT_AHEAD;
+                    //for(int i = 0 ; i <= 20; i++)
+                       // activity.addCommand(returnData);
+                    xposText.setText("X:");
+                    directionText.setText("Direction:");
                 }
-            });
 
-            return view;
-        }
+                if(previousValue != returnData) {
+                    Log.d(TAG, "Servo data: " + returnData);
+                    activity.addCommand(returnData);
+                    previousValue = returnData;
+                }
+                return true;
+            }
+        });
+
+        vertical_joystick.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View view, MotionEvent event) {
+
+                // Send the motion event to the Joystick class to draw a new joystick
+                v_joystick.drawJoystick(event);
+                // Get the action event
+                int action = event.getAction();
+                int returnData = 0;
+                // If the joystick is touched or moved, do stuff
+                if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
+                    yposText.setText("Y: " + v_joystick.getPosition());
+                    double y_pos = v_joystick.getPosition();
+                    // Depending on the direction of the joystick, do stuff
+                    if (y_pos >= 0) {
+                        returnData = MOTOR_FORWARD + (int)(MOTOR_FULL_SPEED * y_pos);
+                        directionText2.setText("Direction: Up");
+                    } else if (y_pos < 0) {
+                        returnData = MOTOR_BACKWARD + (int)(MOTOR_FULL_SPEED  * (-1) * y_pos);
+                        directionText2.setText("Direction: Down");
+                    }
+                }
+                // When the joystick is released, reset
+                else if (action == MotionEvent.ACTION_UP) {
+                    // Stop the engine
+                    returnData = MOTOR_STOP;
+                    //for(int i = 0 ; i <= 20; i++)
+                        //activity.addCommand(returnData);
+                    yposText.setText("Y:");
+                    directionText2.setText("Direction:");
+                }
+
+                if(previousValue != returnData) {
+                    Log.d(TAG, "Motor data: " + returnData);
+                    activity.addCommand(returnData);
+                    previousValue = returnData;
+                }
+                return true;
+            }
+        });
+
+        return view;
+    }
 }

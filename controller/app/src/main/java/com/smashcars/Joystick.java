@@ -13,7 +13,13 @@ import android.widget.RelativeLayout;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+/**
+    Created by Jonathan Granström
+ */
+
 public class Joystick {
+
+    private static final int NR_OF_DECIMALS = 2;
 
     protected Context context;
     protected RelativeLayout layout;
@@ -50,7 +56,7 @@ public class Joystick {
 
     protected double getPosition() {
         BigDecimal bd = new BigDecimal(position);
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
+        bd = bd.setScale(NR_OF_DECIMALS, RoundingMode.HALF_UP);
         position = bd.doubleValue();
         return position;
     }
