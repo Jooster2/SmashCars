@@ -1,3 +1,5 @@
+
+
 /*Typical pin layout used:
  * -----------------------------------------------------------------------------------------
  *             MFRC522      Arduino       Arduino   Arduino    Arduino          Arduino
@@ -13,9 +15,10 @@
 
 #include <SPI.h>
 #include <MFRC522.h>
+#include <VirtualWire.h>
 
-#define SS_PIN 10
-#define RST_PIN 9
+#define SS_PIN 53
+#define RST_PIN 5
 #define LED 13
 
 //**** VARIABLES ***//
@@ -27,11 +30,17 @@ MFRC522::MIFARE_Key key;
 // Init array that will store new NUID 
 byte nuidPICC[3];
 
+const int transmit_pin = 12;
+const int transmit_en_pin = 3;
 
 //TODO: Change effects to chars or whatever to save space. 
 //Using strings for readability for now. 
-String effects[5] = {"Speed boost", "New lifepoint", "Immortality", "Slow others", "Reverse others"};
-String currentEffect = "";
+//String effects[5] = {"Speed boost", "New lifepoint", "Immortality", "Slow others", "Reverse others"};
+//String currentEffect = "";
+
+
+uint8_t effects [5] = {'B','N','I','S','R'};
+uint8_t currentEffect;
 
 //**** MAIN FUNCTIONS ****//
 
@@ -40,6 +49,13 @@ void setup() {
   SPI.begin(); // Init SPI bus
   rfid.PCD_Init(); // Init MFRC522 
   rfid.PCD_SetAntennaGain(rfid.RxGain_max);
+    // RF-module code----
+   vw_set_tx_pin(transmit_pin);
+   //vw_set_rx_pin(receive_pin);
+   vw_set_ptt_pin(transmit_en_pin);
+   vw_set_ptt_inverted(true); // Required for DR3100
+   vw_setup(2000);       // Bits per sec
+  //-----------
   for (byte i = 0; i < 6; i++) {
     key.keyByte[i] = 0xFF;
   }
@@ -127,6 +143,12 @@ void carPassed(){
  */
 void sendEffectToCar(){
   //Send effect 'currentEffect' to car with ID 'nuidPICC'.
+  uint8_t  msg[1] = {currentEffect};
+
+  
+  vw_send(msg, 1);
+  vw_wait_tx();
+  
 }
 
 
