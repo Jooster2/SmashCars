@@ -21,27 +21,23 @@
 #define RST_PIN 5
 #define GREENLED 3
 #define REDLED 2
+#define TRANSMIT_PIN 12
+#define TRANSMIT_EN_PIN 3
+#define POWERUP_SLEEP 15
+#define TRAP_SLEEP 5
 
-//**** VARIABLES ***//
- 
+#define NR_OF_POWERUPS 8 //Including 'T' (trap). Make sure 'T' is always LAST in the array, never add anything after 'T'!
+#define NR_OF TRAPS  6
+uint8_t powerUps [NR_OF_POWERUPS] = {'B', 'I', 'N', 'S', 'R', 'W', 'b', 'T'}; //Boost speed, Immortality, New life point, Slow others, Reverse others, Wall others, Tripple speed boost, Trap 
+uint8_t traps [NR_OF_TRAPS] = {'0', '1', '2', '3', '4', '5'}; //Slow, Lose life point, Self reverse, Wall self, Lock steering, Lock motor
+uint8_t currentPowerUp;
+
 MFRC522 rfid(SS_PIN, RST_PIN); // Instance of the class
 
 MFRC522::MIFARE_Key key; 
 
 // Init array that will store new NUID 
-byte nuidPICC[3];
-
-const int transmit_pin = 12;
-const int transmit_en_pin = 3;
-
-//TODO: Change effects to chars or whatever to save space. 
-//Using strings for readability for now. 
-//String effects[5] = {"Speed boost", "New lifepoint", "Immortality", "Slow others", "Reverse others"};
-//String currentEffect = "";
-
-
-uint8_t effects [5] = {'B','N','I','S','R'};
-uint8_t currentEffect;
+byte nuidPICC[4];
 
 //**** MAIN FUNCTIONS ****//
 
@@ -50,12 +46,12 @@ void setup() {
   SPI.begin(); // Init SPI bus
   rfid.PCD_Init(); // Init MFRC522 
   rfid.PCD_SetAntennaGain(rfid.RxGain_max);
-    // RF-module code----
-   vw_set_tx_pin(transmit_pin);
-   //vw_set_rx_pin(receive_pin);
-   vw_set_ptt_pin(transmit_en_pin);
-   vw_set_ptt_inverted(true); // Required for DR3100
-   vw_setup(2000);       // Bits per sec
+  // RF-module code----
+  vw_set_tx_pin(TRANSMIT_PIN);
+  //vw_set_rx_pin(receive_pin);
+  vw_set_ptt_pin(TRANSMIT_EN_PIN);
+  vw_set_ptt_inverted(true); // Required for DR3100
+  vw_setup(2000);       // Bits per sec
   //-----------
   for (byte i = 0; i < 6; i++) {
     key.keyByte[i] = 0xFF;
@@ -69,13 +65,9 @@ void setup() {
   pinMode(REDLED, OUTPUT);
   pinMode(GREENLED, OUTPUT);
   digitalWrite(REDLED, LOW);
-  digitalWrite(GREENLED, LOW);
-  pinMode(13, OUTPUT);
-  digitalWrite (13, LOW);
-  //Wait a while before becoming active
-  delay(5000);
-  currentEffect = effects[random(5)];
-  digitalWrite(GREENLED, HIGH);  
+  digitalWrite(GREENLED, HIGH);
+  
+  currentPowerUp = powerUps[random(NR_OR_POWERUPS - 1)]; //Generate any power up, but not trap. 
 }
 
 void loop() {
@@ -102,8 +94,8 @@ void checkRFID(){
   if (piccType != MFRC522::PICC_TYPE_MIFARE_MINI &&  
     piccType != MFRC522::PICC_TYPE_MIFARE_1K &&
     piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
-    Serial.println(F("Your tag is not of type MIFARE Classic."));
-    return;
+      Serial.println(F("Your tag is not of type MIFARE Classic."));
+      return;
   }
   
   // Store NUID into nuidPICC array
@@ -111,7 +103,7 @@ void checkRFID(){
     nuidPICC[i] = rfid.uid.uidByte[i];
   }
 
-  //Do stuff
+  //Do important stuff
   carPassed();
  
   /*Serial.println(F("The NUID tag is:"));
@@ -130,30 +122,32 @@ void checkRFID(){
 }
 
 /**
- * Gives an effect to the car, sleeps for a while, then generates new effect. 
+ * Gives power up to the car, generates new power up, then sleeps for a while. 
  */
 void carPassed(){
-  sendEffectToCar();
+  sendPowerUpToCar();
   digitalWrite(GREENLED, LOW);
   digitalWrite(REDLED, HIGH);
-  delay(5000);
+
+  //Generate new power up or trap, then sleep. 
+  currentPowerUp = powerUps[random(NR_OR_POWERUPS)];
+  if(currentPowerUp == 'T'){
+    currentPowerUp = traps[random(NR_OF_TRAPS)];
+    delay(TRAP_SLEEP * 1000);
+  }else{
+    delay(POWERUP_SLEEP * 1000);
+  }
   
-  currentEffect = effects[random(5)];
   digitalWrite(REDLED, LOW);
   digitalWrite(GREENLED, HIGH);
 }
 
-/** 
- *  TODO: use RF, XBee or whatever to send an effect to the car. 
- */
-void sendEffectToCar(){
-  //Send effect 'currentEffect' to car with ID 'nuidPICC'.
-  uint8_t  msg[1] = {currentEffect};
+void sendPowerUpToCar(){
+  //Send effect 'currentPowerUp' to car with ID 'nuidPICC'.
+  uint8_t  msg[5] = {nuidPICC[0], nuidPICC[1], nuidPICC[2], nuidPICC[3], currentPowerUp};
 
-  
-  vw_send(msg, 1);
+  vw_send(msg, 5);
   vw_wait_tx();
-  
 }
 
 
