@@ -19,7 +19,8 @@
 
 #define SS_PIN 53
 #define RST_PIN 5
-#define LED 13
+#define GREENLED 3
+#define REDLED 2
 
 //**** VARIABLES ***//
  
@@ -65,13 +66,16 @@ void setup() {
   printHex(key.keyByte, MFRC522::MF_KEY_SIZE);*/
 
   randomSeed(analogRead(0));
-  pinMode(LED, OUTPUT);
-  digitalWrite(LED, LOW);
-
+  pinMode(REDLED, OUTPUT);
+  pinMode(GREENLED, OUTPUT);
+  digitalWrite(REDLED, LOW);
+  digitalWrite(GREENLED, LOW);
+  pinMode(13, OUTPUT);
+  digitalWrite (13, LOW);
   //Wait a while before becoming active
   delay(5000);
   currentEffect = effects[random(5)];
-  digitalWrite(LED, HIGH);  
+  digitalWrite(GREENLED, HIGH);  
 }
 
 void loop() {
@@ -130,12 +134,13 @@ void checkRFID(){
  */
 void carPassed(){
   sendEffectToCar();
-  digitalWrite(LED, LOW);
-  
+  digitalWrite(GREENLED, LOW);
+  digitalWrite(REDLED, HIGH);
   delay(5000);
   
   currentEffect = effects[random(5)];
-  digitalWrite(LED, HIGH);
+  digitalWrite(REDLED, LOW);
+  digitalWrite(GREENLED, HIGH);
 }
 
 /** 
