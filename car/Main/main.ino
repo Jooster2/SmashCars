@@ -78,10 +78,10 @@ void loop() {
   }
 
   //RF stuff
-  uint8_t buf[1];
-  uint8_t buflen = 1;
-  if (vw_get_message(buf, &buflen))
-    bluetooth.write(buf[0]);
+  uint8_t buf[5];  //index 4 is message, 0-3 is ID. 
+  uint8_t buflen = 5;
+  if (vw_get_message(buf, &buflen)) //TODO: Check ID and see if message is relevant. 
+    bluetooth.write(buf[4]);
 }
 
 int readData(){
