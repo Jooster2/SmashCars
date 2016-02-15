@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.UUID;
@@ -134,7 +135,6 @@ public class BluetoothHandler {
                 Log.i(TAG, uuid.toString());
                 Log.i(TAG, "Attempting to create socket");
                 socket = btServer.createRfcommSocketToServiceRecord(uuid);
-                //Log.i(TAG, "UUID: " + btServer.getUuids()[0].getUuid().toString());
             } catch (Exception e) {
                 Log.i(TAG, e.getLocalizedMessage());
             }
@@ -163,12 +163,24 @@ public class BluetoothHandler {
             try {
                 Log.i(TAG, "Attempting to open stream");
                 DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-                //Toast.makeText(mainActivity.getBaseContext(), "Connected", Toast.LENGTH_SHORT);
-                Short cmd;
+                DataInputStream dis = new DataInputStream(socket.getInputStream());
+                Short toCar;
+                char fromCar;
                 while(isConnected) {
                     try {
+                        if(dis.available() != 0) {
+                            fromCar = (char)dis.readByte();
+                            final char fromCar2 = fromCar;
+                            mainActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mainActivity.resultFromBluetooth(fromCar2);
+                                }
+                            });
+
+                        }
                         //Read a char from the commandbuffer
-                        if((cmd = mainActivity.getControllerCommand()) == null) {
+                        if((toCar = mainActivity.getControllerCommand()) == null) {
                             //If the command is 0 it is no command, so we sleep and then do it all
                             //over again
                             sleep(LATENCY);
@@ -176,8 +188,8 @@ public class BluetoothHandler {
                         }
                         else {
                             //If command is valid write it to the stream
-                            Log.i(TAG, "Writing to socket stream: " + cmd);
-                            dos.writeShort(cmd);
+                            Log.i(TAG, "Writing to socket stream: " + toCar);
+                            dos.writeShort(toCar);
                         }
                     } catch(IOException | InterruptedException e) {
                         Log.i(TAG, e.getLocalizedMessage());

@@ -17,7 +17,10 @@ import com.smashcars.joystick.JoystickFragment;
 public class MainActivity extends AppCompatActivity
 {
     private static final int REQUEST_ENABLE_BT = 1;
+    private int hitpoints;
+    private boolean immortal = false;
     private static final String TAG = "MainActivity";
+
 
     CircularArray<Short> commandBuffer;
     FragmentManager fragmentManager;
@@ -32,7 +35,7 @@ public class MainActivity extends AppCompatActivity
         commandBuffer = new CircularArray<> (10);
         //Initiate the BluetoothHandler
         BluetoothHandler.getInstance().setActivity(this);
-
+        hitpoints = 3;
         fragmentManager = getFragmentManager();
 
         Log.i(TAG, "onCreate done");
@@ -85,6 +88,33 @@ public class MainActivity extends AppCompatActivity
         if(resultCode == RESULT_OK && requestCode == REQUEST_ENABLE_BT)
             connectNow(null);
     }
+
+    public void resultFromBluetooth(char fromCar) {
+        if(fromCar == 'L') {
+            changeHitpoints(-1);
+            if(hitpoints <= 0);
+                //TODO end the game
+        }
+        else {
+            joystickFragment.setPowerup(fromCar);
+        }
+    }
+
+    public void changeHitpoints(int delta) {
+        if(delta < 0 && immortal)
+            return;
+        hitpoints += delta;
+    }
+
+    public void setImmortal(boolean immortal) {
+        this.immortal = immortal;
+    }
+
+    public void stopPowerup(char powerup) {
+        joystickFragment.stopPowerup(powerup);
+    }
+
+
 
     /**
      * Called by button press or onActivityResult method

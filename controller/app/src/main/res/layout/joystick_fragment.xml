@@ -83,4 +83,12 @@
         android:layout_below="@+id/linearLayout1"
         android:layout_alignStart="@+id/directionText2" />
 
+    <ImageButton
+        android:layout_width="151dp"
+        android:layout_height="126dp"
+        android:id="@+id/powerButton"
+        android:layout_centerHorizontal="true"
+        android:layout_alignTop="@+id/linearLayout1"
+        android:onClick="usePowerup"/>
+
 </RelativeLayout>
