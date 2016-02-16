@@ -26,11 +26,18 @@
 #define POWERUP_SLEEP 15
 #define TRAP_SLEEP 5
 
-#define NR_OF_POWERUPS 8 //Including 'T' (trap). Make sure 'T' is always LAST in the array, never add anything after 'T'!
-#define NR_OF TRAPS  6
-uint8_t powerUps [NR_OF_POWERUPS] = {'B', 'I', 'N', 'S', 'R', 'W', 'b', 'T'}; //Boost speed, Immortality, New life point, Slow others, Reverse others, Wall others, Tripple speed boost, Trap 
-uint8_t traps [NR_OF_TRAPS] = {'0', '1', '2', '3', '4', '5'}; //Slow, Lose life point, Self reverse, Wall self, Lock steering, Lock motor
-uint8_t currentPowerUp;
+#define NR_OF_EFFECTS 13 //Update this as we add more effects
+uint8_t* effects; //An array containing all effects, power ups first, then traps
+int trapIndex; //Indicates where in the array the traps start occurring. Initialized on setup.
+int arrayLength;
+uint8_t currentEffect;
+
+//These are all effects, in order:
+//Boost speed, Immortality, New life point, Slow others, Reverse others, Wall others, Tripple speed boost
+//Slow, Lose life point, Self reverse, Wall self, Lock steering, Lock motor
+uint8_t effectDatabase[] = {'B', 'I', 'N', 'S', 'R', 'W', 'b', '0', '1', '2', '3', '4', '5'}; //Make sure all traps are put LAST in the array!
+byte effectPriority []    = {1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1}; //Higher number means higher chance o occurring.
+
 
 MFRC522 rfid(SS_PIN, RST_PIN); // Instance of the class
 
@@ -43,6 +50,7 @@ byte nuidPICC[4];
 
 void setup() {
   Serial.begin(9600);
+  Serial.print("s");
   SPI.begin(); // Init SPI bus
   rfid.PCD_Init(); // Init MFRC522 
   rfid.PCD_SetAntennaGain(rfid.RxGain_max);
@@ -66,12 +74,18 @@ void setup() {
   pinMode(GREENLED, OUTPUT);
   digitalWrite(REDLED, LOW);
   digitalWrite(GREENLED, HIGH);
-  
-  currentPowerUp = powerUps[random(NR_OR_POWERUPS - 1)]; //Generate any power up, but not trap. 
+
+  //Generate new array containing all effects, but with each char occurring as many times as its priority. 
+  generateEffectsArray();
+  //Randomize new effect, but ONLY power up, NOT trap!
+  currentEffect = effects[random(trapIndex-1)];
 }
 
 void loop() {
- checkRFID();
+ //checkRFID();
+ //Test case:
+ Serial.print(currentEffect);
+   carPassed();
 }
 
 /**
@@ -125,29 +139,66 @@ void checkRFID(){
  * Gives power up to the car, generates new power up, then sleeps for a while. 
  */
 void carPassed(){
-  sendPowerUpToCar();
+  sendEffectToCar();
   digitalWrite(GREENLED, LOW);
   digitalWrite(REDLED, HIGH);
 
   //Generate new power up or trap, then sleep. 
-  currentPowerUp = powerUps[random(NR_OR_POWERUPS)];
-  if(currentPowerUp == 'T'){
-    currentPowerUp = traps[random(NR_OF_TRAPS)];
+  currentEffect = effects[random(arrayLength)];
+  if(isTrap(currentEffect))
     delay(TRAP_SLEEP * 1000);
-  }else{
+  else
     delay(POWERUP_SLEEP * 1000);
-  }
   
   digitalWrite(REDLED, LOW);
   digitalWrite(GREENLED, HIGH);
 }
 
-void sendPowerUpToCar(){
-  //Send effect 'currentPowerUp' to car with ID 'nuidPICC'.
-  uint8_t  msg[5] = {nuidPICC[0], nuidPICC[1], nuidPICC[2], nuidPICC[3], currentPowerUp};
+/**
+ * Broadcast current effect and ID of the car that just passed . 
+ */
+void sendEffectToCar(){
+  //Send effect 'currentEffect' to car with ID 'nuidPICC'.
+  uint8_t  msg[5] = {nuidPICC[0], nuidPICC[1], nuidPICC[2], nuidPICC[3], currentEffect};
 
   vw_send(msg, 5);
   vw_wait_tx();
+}
+
+/*
+ * Generates new array containing all effects, but with each char occurring as many times as its priority. 
+ * Function is called only on startup.
+ */
+void generateEffectsArray(){
+  byte i, j, k = 0, arraySize = 0;
+  
+  //Calculate how large the array has to be.
+  for(i = 0; i < NR_OF_EFFECTS; i++)
+    arraySize += effectPriority[i];
+    
+  //Create effects array
+  effects = (uint8_t*)malloc(arraySize);
+
+  trapIndex = 0;
+  for(i = 0; i < NR_OF_EFFECTS;i++){ //For each effect...
+    for(j = 0; j < effectPriority[i]; j++){
+      effects[k++] = effectDatabase[i]; //...add that char to tmpArray as many times as its priority
+      
+      if(trapIndex == 0 && isTrap(effectDatabase[i])) //Set value of trapIndex, indicating where traps start occurring in the array. 
+        trapIndex = k-1; 
+    }
+  }
+  
+  arrayLength = arraySize; //Set size of effects array in global variable.
+}
+
+/**
+ * Checks if an effect is a trap
+ * TODO: If we add traps having other symbols than 0-9, change this function accordingly. 
+ */
+bool isTrap(uint8_t effect){
+  return ((char)effect >= 0 && (char) effect <= 9 ); 
+  //Alternative code: return -1 != "0123456789".indexOf((char)effect);
 }
 
 
