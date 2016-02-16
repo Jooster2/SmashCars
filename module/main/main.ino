@@ -107,16 +107,18 @@ void checkRFID(){
     nuidPICC[i] = rfid.uid.uidByte[i];
   }
 
-  //Do stuff
-  carPassed();
- 
-  /*Serial.println(F("The NUID tag is:"));
+  Serial.println(F("The NUID tag is:"));
   Serial.print(F("In hex: "));
   printHex(nuidPICC, rfid.uid.size);
   Serial.println();
-  Serial.print(F("In dec: "));
+  //Do stuff
+  carPassed();
+ 
+  
+  /*Serial.print(F("In dec: "));
   printDec(rfid.uid.uidByte, rfid.uid.size);
-  Serial.println();*/
+  Serial.println();
+  */
     
   // Halt PICC (Stops the reading)
   rfid.PICC_HaltA();
@@ -132,7 +134,7 @@ void carPassed(){
   sendEffectToCar();
   digitalWrite(LED, LOW);
   
-  delay(5000);
+  //delay(5000);
   
   currentEffect = effects[random(5)];
   digitalWrite(LED, HIGH);
