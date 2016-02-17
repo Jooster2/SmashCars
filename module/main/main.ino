@@ -31,6 +31,7 @@ uint8_t* effects; //An array containing all effects, power ups first, then traps
 int trapIndex; //Indicates where in the array the traps start occurring. Initialized on setup.
 int arrayLength;
 uint8_t currentEffect;
+bool isArmed; //Used for traps
 
 //These are all effects, in order:
 //Boost speed, Immortality, New life point, Slow others, Reverse others, Wall others, Tripple speed boost
@@ -77,15 +78,11 @@ void setup() {
 
   //Generate new array containing all effects, but with each char occurring as many times as its priority. 
   generateEffectsArray();
-  //Randomize new effect, but ONLY power up, NOT trap!
-  currentEffect = effects[random(trapIndex-1)];
+  isArmed = false;
 }
 
 void loop() {
- //checkRFID();
- //Test case:
- Serial.print(currentEffect);
-   carPassed();
+ checkRFID();
 }
 
 /**
@@ -139,17 +136,25 @@ void checkRFID(){
  * Gives power up to the car, generates new power up, then sleeps for a while. 
  */
 void carPassed(){
-  sendEffectToCar();
   digitalWrite(GREENLED, LOW);
   digitalWrite(REDLED, HIGH);
-
-  //Generate new power up or trap, then sleep. 
-  currentEffect = effects[random(arrayLength)];
-  if(isTrap(currentEffect))
-    delay(TRAP_SLEEP * 1000);
-  else
-    delay(POWERUP_SLEEP * 1000);
   
+  if(isArmed){ //If module contains a trap, send it to car, then sleep. 
+    sendEffectToCar(currentEffect);      
+    delay(POWERUP_SLEEP * 1000);    
+    isArmed = false;
+  }else{ //If module doesn't contain a trap, randomize new effect and send to car, then sleep
+    currentEffect = effects[random(arrayLength)]; 
+
+    if(isTrap(currentEffect)){ //If randomized effect is a trap, send only a 'T' to car, sleep for a short while, then mark module as armed. 
+      sendEffectToCar('T');
+      delay(TRAP_SLEEP * 1000);
+      isArmed = true;
+    }else{
+      sendEffectToCar(currentEffect);
+      delay(POWERUP_SLEEP * 1000);
+    }
+  } 
   digitalWrite(REDLED, LOW);
   digitalWrite(GREENLED, HIGH);
 }
@@ -157,9 +162,9 @@ void carPassed(){
 /**
  * Broadcast current effect and ID of the car that just passed . 
  */
-void sendEffectToCar(){
-  //Send effect 'currentEffect' to car with ID 'nuidPICC'.
-  uint8_t  msg[5] = {nuidPICC[0], nuidPICC[1], nuidPICC[2], nuidPICC[3], currentEffect};
+void sendEffectToCar(uint8_t effect){
+  //Send effect to car with ID 'nuidPICC'.
+  uint8_t  msg[5] = {nuidPICC[0], nuidPICC[1], nuidPICC[2], nuidPICC[3], effect};
 
   vw_send(msg, 5);
   vw_wait_tx();
@@ -187,8 +192,7 @@ void generateEffectsArray(){
       if(trapIndex == 0 && isTrap(effectDatabase[i])) //Set value of trapIndex, indicating where traps start occurring in the array. 
         trapIndex = k-1; 
     }
-  }
-  
+  }  
   arrayLength = arraySize; //Set size of effects array in global variable.
 }
 
