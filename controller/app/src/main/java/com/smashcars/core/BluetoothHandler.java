@@ -66,7 +66,7 @@ public class BluetoothHandler {
      */
     public void connect(String macAddress) {
         Log.i(TAG, "Starting connection procedure");
-        btServer = btAdapter.getRemoteDevice(macAddress);
+        btServer = btAdapter.getRemoteDevice("00:06:66:7B:AC:2C");
         if(btServer != null) {
             Log.i(TAG, "Found server");
             //Success, device found. Now send the device to a thread and start it
