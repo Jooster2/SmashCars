@@ -1,8 +1,10 @@
 package com.smashcars.core;
 
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity
     CircularArray<Short> commandBuffer;
     FragmentManager fragmentManager;
     JoystickFragment joystickFragment;
+    CarListFragment carListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -37,6 +40,13 @@ public class MainActivity extends AppCompatActivity
         BluetoothHandler.getInstance().setActivity(this);
         hitpoints = 3;
         fragmentManager = getFragmentManager();
+        carListFragment = new CarListFragment();
+        fragmentManager.beginTransaction()
+                .add(R.id.activity_main, carListFragment, "carListFragment").commit();
+
+        joystickFragment = new JoystickFragment();
+
+
 
         Log.i(TAG, "onCreate done");
     }
@@ -44,6 +54,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
+        BluetoothHandler.getInstance().disconnect();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         BluetoothHandler.getInstance().disconnect();
     }
 
@@ -130,11 +146,17 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 
         } else {
-            BluetoothHandler.getInstance().connect();
+            String macAddress = carListFragment.getMacAddress();
+            //fragmentManager.beginTransaction().remove(carListFragment).commit();
+            macAddress = "00:06:66:7B:AB:CA";
+            if(macAddress != null) {
+                BluetoothHandler.getInstance().connect(macAddress);
 
-            joystickFragment = new JoystickFragment();
-            fragmentManager.beginTransaction()
-                    .add(R.id.fragment_container, joystickFragment).commit();
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                fragmentManager.beginTransaction().add(R.id.activity_main, joystickFragment).commit();
+
+
+            }
         }
     }
 

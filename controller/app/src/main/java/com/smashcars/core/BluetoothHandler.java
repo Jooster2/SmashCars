@@ -14,11 +14,7 @@ import java.util.UUID;
  * @author Joakim Schmidt
  */
 public class BluetoothHandler {
-    //Carls MAC-address
-    private static final String SERVER_MAC = "00:06:66:7B:AC:2C";
-    //private static final UUID uuid = UUID.fromString("a76070ab-55ed-515c-98c7-28c7757e81c2");
     private static final int LATENCY = 50;
-    //private static final UUID _UUID = java.util.UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
     private static final String TAG = "bthandler";
 
     private MainActivity mainActivity;
@@ -68,9 +64,9 @@ public class BluetoothHandler {
     /**
      * Attempts to connect to the SERVER_MAC address
      */
-    public void connect() {
+    public void connect(String macAddress) {
         Log.i(TAG, "Starting connection procedure");
-        btServer = btAdapter.getRemoteDevice(SERVER_MAC);
+        btServer = btAdapter.getRemoteDevice(macAddress);
         if(btServer != null) {
             Log.i(TAG, "Found server");
             //Success, device found. Now send the device to a thread and start it
@@ -161,7 +157,7 @@ public class BluetoothHandler {
             //Create the datastream, and start sending commands (from mainactivitys circularbuffer)
             //Send one char at a time, with LATENCY milliseconds between
             try {
-                Log.i(TAG, "Attempting to open stream");
+                Log.i(TAG, "Attempting to open streams");
                 DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
                 DataInputStream dis = new DataInputStream(socket.getInputStream());
                 Short toCar;
@@ -170,6 +166,7 @@ public class BluetoothHandler {
                     try {
                         if(dis.available() != 0) {
                             fromCar = (char)dis.readByte();
+                            Log.i(TAG, "Read from car: " + fromCar);
                             final char fromCar2 = fromCar;
                             mainActivity.runOnUiThread(new Runnable() {
                                 @Override

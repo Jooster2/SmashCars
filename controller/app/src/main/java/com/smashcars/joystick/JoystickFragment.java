@@ -208,7 +208,7 @@ public class JoystickFragment extends Fragment{
             case 'T': break;
         }
 
-        setPowerupImage();
+        //setPowerupImage();
 
         numberOfPowerups--;
         if(numberOfPowerups == 0)
