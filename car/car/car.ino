@@ -1,13 +1,15 @@
+#include <Servo.h>
+#include <SoftwareSerial.h>  
+#include <VirtualWire.h>
+
 #define FORWARD 0
 #define BACKWARD 1
 #define SERVO 2
 #define BRAKE 3
 #define RF_RECEIVE_PIN 11
+#define CRASH_SENSOR_PIN 5
 
-#include <Servo.h>
-#include <SoftwareSerial.h>  
-#include <VirtualWire.h>
-
+bool sensorIsInactive;
 boolean driveForward;
 boolean driveBackwards;
 boolean servoTurn;
@@ -37,6 +39,8 @@ void setup() {
   pinMode (motorDir, OUTPUT);
   pinMode (motor, OUTPUT);
   pinMode (motorBrakePin, OUTPUT);
+  pinMode(CRASH_SENSOR_PIN, INPUT);
+  sensorIsInactive = true;
   
   servo.attach (servoPin);
   servo.write (90);
@@ -82,6 +86,16 @@ void loop() {
   uint8_t buflen = 5;
   if (vw_get_message(buf, &buflen)) //TODO: Check ID and see if message is relevant. 
     bluetooth.write(buf[4]);
+
+  //Crash sensor stuff
+  if(sensorIsInactive)
+    if(digitalRead(CRASH_SENSOR_PIN == HIGH)){
+      bluetooth.write('L');
+      sensorIsInactive = false;
+    }
+  else
+    if(digitalRead(CRASH_SENSOR_PIN == LOW))
+      sensorIsInactive = false;
 }
 
 int readData(){
