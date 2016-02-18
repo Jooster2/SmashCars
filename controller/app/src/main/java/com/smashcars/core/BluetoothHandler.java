@@ -14,7 +14,8 @@ import java.util.UUID;
  */
 public class BluetoothHandler {
     //Carls MAC-address
-    private static final String SERVER_MAC = "00:06:66:7B:AC:2C";
+    //private static final String SERVER_MAC = "00:06:66:7B:AC:2C";
+    private static final String SERVER_MAC = "00:06:66:7B:AB:CA";
     //private static final UUID uuid = UUID.fromString("a76070ab-55ed-515c-98c7-28c7757e81c2");
     private static final int LATENCY = 50;
     //private static final UUID _UUID = java.util.UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
