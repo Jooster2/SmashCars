@@ -7,9 +7,9 @@
 #define SERVO 2
 #define BRAKE 3
 #define RF_RECEIVE_PIN 11
-#define CRASH_SENSOR_PIN 5
+#define CRASH_SENSOR_PIN 8
 
-bool sensorIsInactive;
+bool sensorIsActive;
 boolean driveForward;
 boolean driveBackwards;
 boolean servoTurn;
@@ -40,7 +40,7 @@ void setup() {
   pinMode (motor, OUTPUT);
   pinMode (motorBrakePin, OUTPUT);
   pinMode(CRASH_SENSOR_PIN, INPUT);
-  sensorIsInactive = true;
+  sensorIsActive = true;
   
   servo.attach (servoPin);
   servo.write (90);
@@ -88,14 +88,16 @@ void loop() {
     bluetooth.write(buf[4]);
 
   //Crash sensor stuff
-  if(sensorIsInactive)
-    if(digitalRead(CRASH_SENSOR_PIN == HIGH)){
+  if(sensorIsActive){
+    if(digitalRead(CRASH_SENSOR_PIN) == HIGH){
+      Serial.print(sensorIsActive);
       bluetooth.write('L');
-      sensorIsInactive = false;
+      Serial.print("L");
+      sensorIsActive = false;
     }
-  else
-    if(digitalRead(CRASH_SENSOR_PIN == LOW))
-      sensorIsInactive = false;
+  }else
+    if(digitalRead(CRASH_SENSOR_PIN) == LOW)
+      sensorIsActive = true;
 }
 
 int readData(){
@@ -118,7 +120,7 @@ void brake(){
   digitalWrite (motorBrakePin, HIGH);
 }
 void turnServo(int val){
-  servo.write (val); 
+  //servo.write (val); 
   Serial.println("Servo vrid");
   Serial.println(val);
 }
