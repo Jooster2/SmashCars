@@ -22,7 +22,7 @@ public class JoystickFragment extends Fragment{
     private static final String TAG = "JoystickFragment";
 
     private static final int SERVO_STRAIGHT_AHEAD = 90;
-    private static final int SERVO_MAXIMUM_ANGLE = 35;
+    private static final int SERVO_MAXIMUM_ANGLE = 45;
     private static final int MOTOR_STOP = 256;
     private static final int MOTOR_FORWARD = 768;
     private static final int MOTOR_BACKWARD = 256;
