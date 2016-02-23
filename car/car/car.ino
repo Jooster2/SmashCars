@@ -1,6 +1,6 @@
-#include <Servo.h>
+#include <ServoTimer2.h>
 #include <SoftwareSerial.h>  
-//#include <VirtualWire.h>
+#include <VirtualWire.h>
 
 #define FORWARD 0
 #define BACKWARD 1
@@ -23,7 +23,7 @@ int servoPin = 7;
 
 int lostCon;
 
-Servo servo;
+ServoTimer2 servo;
 SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
  
@@ -85,7 +85,7 @@ void loop() {
     lostCon = 0;
   }
   else {
-    if (lostCon == 2)
+    if (lostCon == 20)
     {
       motorDrive(FORWARD,0);
     }
