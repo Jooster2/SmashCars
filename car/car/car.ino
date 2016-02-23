@@ -1,6 +1,6 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>  
-#include <VirtualWire.h>
+//#include <VirtualWire.h>
 
 #define FORWARD 0
 #define BACKWARD 1
@@ -20,6 +20,9 @@ int motorDir = 13;
 int motor = 11;
 int motorBrakePin = 8;
 int servoPin = 7;
+
+int lostCon;
+
 Servo servo;
 SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
@@ -49,11 +52,13 @@ void setup() {
   driveBackwards = false;
   servoTurn = false;
   motorBrake= true;
-
+  lostCon = 0;
   // Initialise RF receiver)
+  /*
   vw_set_rx_pin(RF_RECEIVE_PIN);
   vw_setup(2000);  // Bits per sec
   vw_rx_start();   // Start the receiver PLL running
+*/
 }
 
 void loop() {  
@@ -77,16 +82,23 @@ void loop() {
     }else if (motorBrake){
     }
     delay (50);
+    lostCon = 0;
   }
   else {
+    if (lostCon == 2)
+    {
+      motorDrive(FORWARD,0);
+    }
+    delay (50);
+    lostCon++;
   }
-
+  /*
   //RF stuff
   uint8_t buf[5];  //index 4 is message, 0-3 is ID. 
   uint8_t buflen = 5;
   if (vw_get_message(buf, &buflen)) //TODO: Check ID and see if message is relevant. 
     bluetooth.write(buf[4]);
-
+*/
   //Crash sensor stuff
   if(sensorIsActive){
     if(digitalRead(CRASH_SENSOR_PIN) == HIGH){
@@ -106,11 +118,11 @@ int readData(){
 }
 
 void motorDrive(int dir, int val){
-  if (dir = 0){
-    digitalWrite (motorDir, HIGH); 
+  if (dir == 0){
+    digitalWrite (motorDir, LOW); 
   }
   else {
-    digitalWrite (motorDir, LOW);
+    digitalWrite (motorDir, HIGH);
   }
   digitalWrite (motorBrake, LOW);
   analogWrite(motor, val);
@@ -120,7 +132,7 @@ void brake(){
   digitalWrite (motorBrakePin, HIGH);
 }
 void turnServo(int val){
-  //servo.write (val); 
+  servo.write (val); 
   Serial.println("Servo vrid");
   Serial.println(val);
 }
@@ -128,13 +140,13 @@ void turnServo(int val){
 void demask(int cmd){
   int temp = cmd & 0b00000111;
   if (temp == 1){
-    driveForward =true;
-    driveBackwards = false;
+    driveForward =false;
+    driveBackwards = true;
     motorBrake = false;
     servoTurn = false;
   }else if (temp == 3){
-    driveForward =false;
-    driveBackwards = true;
+    driveForward =true;
+    driveBackwards = false;
     motorBrake = false;
     servoTurn = false;
   }else if (temp == 0){
