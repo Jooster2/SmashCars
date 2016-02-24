@@ -202,6 +202,13 @@ public class BluetoothHandler {
                     }
                 }
 
+                //Send command to close socket on car-side
+                Log.i(TAG, "Sending socket-close code");
+                dos.writeShort((short)2048);
+                try {
+                    sleep(50);
+                } catch (InterruptedException e) {}
+                Log.i(TAG, "Socket-close code sent");
                 //Clean up
                 Log.i(TAG, "Closing stream and socket");
                 dos.flush();
