@@ -1,7 +1,9 @@
 package com.smashcars.joystick;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -92,6 +94,8 @@ public class JoystickFragment extends Fragment{
                     activity.stopServo(lastMotor);
                     lastServo = 90;
 
+                    Vibrator v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+                    v.vibrate(150);
                 }
 
 
@@ -139,6 +143,9 @@ public class JoystickFragment extends Fragment{
                     directionText2.setText("Direction:");
                     activity.stopMotor(lastServo);
                     lastMotor = 256;
+
+                    Vibrator v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+                    v.vibrate(50);
                 }
 
                 return true;
