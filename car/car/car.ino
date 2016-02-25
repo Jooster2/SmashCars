@@ -1,40 +1,44 @@
-#include <ServoTimer2.h>
+#include <RCSwitch.h>
+//BLÅ 11, grön 10, servo sju
+#include <Servo.h>
 #include <SoftwareSerial.h>  
-#include <VirtualWire.h>
+//#include <VirtualWire.h>
 
 #define FORWARD 0
 #define BACKWARD 1
 #define SERVO 2
 #define BRAKE 3
-#define RF_RECEIVE_PIN 11
-#define CRASH_SENSOR_PIN 8
+#define RF_RECEIVE_PIN 53
+#define CRASH_SENSOR_PIN 12
 
 bool sensorIsActive;
 boolean driveForward;
 boolean driveBackwards;
 boolean servoTurn;
 boolean motorBrake;
-int bluetoothTx = 2;  // TX-O pin of bluetooth mate, Arduino D2
-int bluetoothRx = 3;  // RX-I pin of bluetooth mate, Arduino D3
+int bluetoothTx = 50;  // TX-O pin of bluetooth mate, Arduino D2
+int bluetoothRx = 51;  // RX-I pin of bluetooth mate, Arduino D3
 int motorDir = 13;
 int motor = 11;
 int motorBrakePin = 8;
 int servoPin = 7;
 
 int lostCon;
-
-ServoTimer2 servo;
+RCSwitch receiveRF = RCSwitch();
+Servo servo;
 SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
  
 void setup() {
-  Serial.begin(9600);// Debugging only
-  Serial.println("setup");
+  //Serial.begin(9600);// Debugging only
+  //Serial.println("setup");
  
   bluetooth.begin(115200);  // The Bluetooth Mate defaults to 115200bps
-  bluetooth.print("$");  // Print three times individually
-  bluetooth.print("$");
-  bluetooth.print("$");  // Enter command mode
+  bluetooth.print("$$$");  // Print three times individually
+  bluetooth.print("CMD");// Enter command mode
+  
+  
+  
   delay(100);  // Short delay, wait for the Mate to send back CMD
   bluetooth.println("U,9600,N");  // Temporarily Change the baudrate to 9600, no parity
   // 115200 can be too fast at times for NewSoftSerial to relay the data reliably
@@ -54,7 +58,8 @@ void setup() {
   motorBrake= true;
   lostCon = 0;
   // Initialise RF receiver)
-  /*
+  receiveRF.enableReceive(5);
+ /* 
   vw_set_rx_pin(RF_RECEIVE_PIN);
   vw_setup(2000);  // Bits per sec
   vw_rx_start();   // Start the receiver PLL running
@@ -92,8 +97,19 @@ void loop() {
     delay (50);
     lostCon++;
   }
-  /*
+  
   //RF stuff
+  if (receiveRF.available())
+  {
+    unsigned long id = receiveRF.getReceivedValue();
+    uint8_t message = (uint8_t) receiveRF.getReceivedValue();
+    if (message != 0 )
+    {
+      bluetooth.write(message);
+    }
+  }
+  
+  /*
   uint8_t buf[5];  //index 4 is message, 0-3 is ID. 
   uint8_t buflen = 5;
   if (vw_get_message(buf, &buflen)) //TODO: Check ID and see if message is relevant. 
@@ -102,9 +118,9 @@ void loop() {
   //Crash sensor stuff
   if(sensorIsActive){
     if(digitalRead(CRASH_SENSOR_PIN) == HIGH){
-      Serial.print(sensorIsActive);
+      //Serial.print(sensorIsActive);
       bluetooth.write('L');
-      Serial.print("L");
+      //Serial.print("L");
       sensorIsActive = false;
     }
   }else
@@ -132,13 +148,14 @@ void brake(){
   digitalWrite (motorBrakePin, HIGH);
 }
 void turnServo(int val){
-  servo.write (val); 
+  //servo.write ((int)(val*8.333333)+750); 
+  servo.write(val);
   Serial.println("Servo vrid");
   Serial.println(val);
 }
 
 void demask(int cmd){
-  int temp = cmd & 0b00000111;
+  int temp = cmd & 0b00001111;
   if (temp == 1){
     driveForward =false;
     driveBackwards = true;
@@ -154,11 +171,16 @@ void demask(int cmd){
     driveBackwards = false;
     motorBrake = false;
     servoTurn = true;
-  }else if (temp = 4){
+  }else if (temp == 4){
     driveForward =false;
     driveBackwards = false;
     motorBrake = true;
     servoTurn = false;
-  }
+  }else if (temp == 8)
+    {
+      bluetooth.print("$$$");  // Print three times individually // Enter command mode
+      bluetooth.println("K,");
+    }
+  
 }
   
