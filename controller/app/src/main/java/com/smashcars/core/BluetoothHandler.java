@@ -21,6 +21,7 @@ public class BluetoothHandler {
     private BluetoothAdapter btAdapter;
     private BluetoothDevice btServer;
     private ActiveThread activeThread;
+    private boolean connecting;
 
 
     private static BluetoothHandler instance = null;
@@ -43,6 +44,7 @@ public class BluetoothHandler {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         if(btAdapter == null)
             Log.i(TAG, "Bluetooth hardware not found");
+        connecting = false;
     }
 
     /**
@@ -65,13 +67,16 @@ public class BluetoothHandler {
      * Attempts to connect to the SERVER_MAC address
      */
     public void connect(String macAddress) {
+        connecting = true;
         Log.i(TAG, "Starting connection procedure");
-        btServer = btAdapter.getRemoteDevice("00:06:66:7B:AC:2C");
+        Log.i(TAG, "MAC-address is " + macAddress);
+        btServer = btAdapter.getRemoteDevice(macAddress);
         if(btServer != null) {
             Log.i(TAG, "Found server");
             //Success, device found. Now send the device to a thread and start it
             activeThread = new ActiveThread(btServer);
             activeThread.start();
+
         } else {
             Log.i(TAG, "Did not find server");
         }
@@ -87,6 +92,19 @@ public class BluetoothHandler {
         } catch(NullPointerException e) {
             Log.i(TAG, "Failed disconnecting due to no activeThread object");
         }
+    }
+
+    public boolean isConnected() {
+        //return true;
+        try {
+            return activeThread.isConnected();
+        } catch(NullPointerException e) {
+            return false;
+        }
+    }
+
+    public boolean isConnecting() {
+        return connecting;
     }
 
     /**
@@ -111,6 +129,10 @@ public class BluetoothHandler {
         private void disconnect() {
             isConnected = false;
             Log.i(TAG, "Disconnected");
+        }
+
+        private boolean isConnected() {
+            return isConnected;
         }
 
         /**
@@ -140,6 +162,7 @@ public class BluetoothHandler {
                 btAdapter.cancelDiscovery();
                 socket.connect();
                 isConnected = true;
+                connecting = false;
                 Log.i(TAG, "Connected");
             } catch (Exception e) {
 

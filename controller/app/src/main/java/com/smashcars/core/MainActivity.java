@@ -19,8 +19,10 @@ import com.smashcars.joystick.JoystickFragment;
 public class MainActivity extends AppCompatActivity
 {
     private static final int REQUEST_ENABLE_BT = 1;
+    private static final int REQUEST_CHOOSE_CAR = 2;
     private int hitpoints;
     private boolean immortal = false;
+    private boolean firstRun = true;
     private static final String TAG = "MainActivity";
 
 
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        //firstRun = savedInstanceState.getBoolean("firstRun", true);
 
         setContentView(R.layout.activity_main);
         commandBuffer = new CircularArray<> (10);
@@ -40,27 +43,58 @@ public class MainActivity extends AppCompatActivity
         BluetoothHandler.getInstance().setActivity(this);
         hitpoints = 3;
         fragmentManager = getFragmentManager();
-        carListFragment = new CarListFragment();
-        fragmentManager.beginTransaction()
-                .add(R.id.activity_main, carListFragment, "carListFragment").commit();
-
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         joystickFragment = new JoystickFragment();
-
-
+        fragmentManager.beginTransaction()
+                .add(R.id.activity_main, joystickFragment).commit();
 
         Log.i(TAG, "onCreate done");
     }
 
     @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+
+        savedInstanceState.putBoolean("firstRun", firstRun);
+        super.onSaveInstanceState(savedInstanceState);
+
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        firstRun = savedInstanceState.getBoolean("firstRun");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //if(!(BluetoothHandler.getInstance().isConnected() ||
+          //      BluetoothHandler.getInstance().isConnecting())) {
+        /*if(firstRun) {
+            firstRun = false;
+            Log.i(TAG, "Starting connection-activity");
+            Intent conn = new Intent(getApplicationContext(), CarListActivity.class);
+            startActivityForResult(conn, REQUEST_CHOOSE_CAR);
+            Log.i(TAG, "activity started");
+        }*/
+
+    }
+    @Override
     protected void onPause() {
         super.onPause();
-        BluetoothHandler.getInstance().disconnect();
+        //BluetoothHandler.getInstance().disconnect();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        BluetoothHandler.getInstance().disconnect();
+        Log.i(TAG, "ondestroy mainactivity");
+        //BluetoothHandler.getInstance().disconnect();
+    }
+
+    public void chooseCar(View v) {
+        Intent conn = new Intent(getApplicationContext(), CarListActivity.class);
+        startActivityForResult(conn, REQUEST_CHOOSE_CAR);
     }
 
     //TODO is this method necessary?
@@ -101,8 +135,15 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "Got activity result");
-        if(resultCode == RESULT_OK && requestCode == REQUEST_ENABLE_BT)
+        if(resultCode == RESULT_OK && requestCode == REQUEST_ENABLE_BT) {
+            Log.i(TAG, "Activity was enable BT");
             connectNow(null);
+        }
+        else if(resultCode == RESULT_OK && requestCode == REQUEST_CHOOSE_CAR) {
+            Log.i(TAG, "Activity was choose car");
+            String mac = data.getStringExtra("result");
+            connectNow(mac);
+        }
     }
 
     public void resultFromBluetooth(char fromCar) {
@@ -136,9 +177,9 @@ public class MainActivity extends AppCompatActivity
      * Called by button press or onActivityResult method
      * Enables bluetooth, and calls the connect method in the BluetoothHandler with the MAC-address
      * specified in textfield as argument (can be null)
-     * @param v view that called this
+     * @param macAddress the address to connect to
      */
-    public void connectNow(View v) {
+    public void connectNow(String macAddress) {
         Log.i(TAG, "connect-button pressed");
         if(!BluetoothHandler.getInstance().isEnabled()) {
             Log.i(TAG, "Bluetooth disabled, enabling it now");
@@ -146,15 +187,10 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 
         } else {
-            String macAddress = carListFragment.getMacAddress();
-            //fragmentManager.beginTransaction().remove(carListFragment).commit();
-            macAddress = "00:06:66:7B:AB:CA";
             if(macAddress != null) {
+                Log.i(TAG, "Calling BT-handler with MAC: " + macAddress);
+                Log.i(TAG, "FirstRun is: " + firstRun);
                 BluetoothHandler.getInstance().connect(macAddress);
-
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                fragmentManager.beginTransaction().add(R.id.activity_main, joystickFragment).commit();
-
 
             }
         }

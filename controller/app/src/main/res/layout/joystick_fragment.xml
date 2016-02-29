@@ -91,4 +91,13 @@
         android:layout_alignTop="@+id/linearLayout1"
         android:onClick="usePowerup"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Connect"
+        android:id="@+id/connectButton"
+        android:layout_below="@+id/powerButton"
+        android:layout_centerHorizontal="true"
+        android:onClick="chooseCar"/>
+
 </RelativeLayout>
