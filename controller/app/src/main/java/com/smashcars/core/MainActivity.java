@@ -26,8 +26,8 @@ public class MainActivity extends AppCompatActivity
 
     CircularArray<Short> commandBuffer;
     FragmentManager fragmentManager;
-    JoystickFragment joystickFragment;
-    CarListFragment carListFragment;
+    //JoystickFragment joystickFragment;
+    //CarListFragment carListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -40,11 +40,19 @@ public class MainActivity extends AppCompatActivity
         BluetoothHandler.getInstance().setActivity(this);
         hitpoints = 3;
         fragmentManager = getFragmentManager();
-        carListFragment = new CarListFragment();
-        fragmentManager.beginTransaction()
-                .add(R.id.activity_main, carListFragment, "carListFragment").commit();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.add(R.layout.activity_main, new CarListFragment(), "carlist");
+        transaction.add(R.layout.activity_main, new JoystickFragment(), "joystick");
+        transaction.show(fragmentManager.findFragmentByTag("carlist"));
+        transaction.hide(fragmentManager.findFragmentByTag("joystick"));
+        transaction.commit();
 
-        joystickFragment = new JoystickFragment();
+
+        /*carListFragment = new CarListFragment();
+        fragmentManager.beginTransaction()
+                .add(R.id.mainLayout, carListFragment, "carListFragment").commit();
+
+        joystickFragment = new JoystickFragment();*/
 
 
 
@@ -112,7 +120,8 @@ public class MainActivity extends AppCompatActivity
                 //TODO end the game
         }
         else {
-            joystickFragment.setPowerup(fromCar);
+            ((JoystickFragment)fragmentManager.findFragmentByTag("joystick")).setPowerup(fromCar);
+            //joystickFragment.setPowerup(fromCar);
         }
     }
 
@@ -127,7 +136,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void stopPowerup(char powerup) {
-        joystickFragment.stopPowerup(powerup);
+        ((JoystickFragment)fragmentManager.findFragmentByTag("joystick")).stopPowerup(powerup);
+        //joystickFragment.stopPowerup(powerup);
     }
 
 
@@ -146,15 +156,19 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 
         } else {
-            String macAddress = carListFragment.getMacAddress();
-            //fragmentManager.beginTransaction().remove(carListFragment).commit();
-            macAddress = "00:06:66:7B:AB:CA";
+            //String macAddress = carListFragment.getMacAddress();
+
+
+            String macAddress = "00:06:66:7B:AB:CA";
             if(macAddress != null) {
-                BluetoothHandler.getInstance().connect(macAddress);
+                //BluetoothHandler.getInstance().connect(macAddress);
 
+                //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
+                transaction.hide(fragmentManager.findFragmentByTag("carlist"));
+                transaction.show(fragmentManager.findFragmentByTag("joystick"));
+                transaction.commit();
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                fragmentManager.beginTransaction().add(R.id.activity_main, joystickFragment).commit();
-
 
             }
         }

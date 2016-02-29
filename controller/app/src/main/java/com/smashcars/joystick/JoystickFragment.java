@@ -50,7 +50,6 @@ public class JoystickFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.joystick_fragment, container, false);
-
         final MainActivity activity = (MainActivity)getActivity();
 
         xposText = (TextView)view.findViewById(R.id.xposText);

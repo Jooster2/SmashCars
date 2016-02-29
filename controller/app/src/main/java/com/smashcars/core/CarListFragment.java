@@ -33,6 +33,7 @@ public class CarListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         macAddress = new String();
 
+
     }
 
     @Override
