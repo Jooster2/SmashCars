@@ -10,7 +10,9 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -31,19 +33,27 @@ public class JoystickFragment extends Fragment{
     private boolean motorReverse = false;
 
     private static final int SERVO_STRAIGHT_AHEAD = 90;
-    private static final int SERVO_MAXIMUM_ANGLE = 35;
+    private static final int SERVO_MAXIMUM_ANGLE = 50;
     private static final int MOTOR_STOP = 256;
     private static final int MOTOR_FORWARD = 768;
     private static final int MOTOR_BACKWARD = 256;
     private static final int MOTOR_FULL_SPEED = 200;
+
+    private String macAddress;
+
+    private static final String CAR_1_MAC_ADDRESS = "00:06:66:7B:AC:2C";
+    private static final String CAR_2_MAC_ADDRESS = "00:06:66:7B:AB:CA";
+
     int lastMotor = 256;
     int lastServo = 90;
     private int previousValue = 0;
+
     RelativeLayout horizontal_joystick, vertical_joystick; // Background layout of the joystick (the pad or whatever)
-    TextView xposText, yposText, directionText, directionText2; // Writes out the angle (in degrees) and direction of the joystick
     HorizontalJoystick h_joystick; // The actual joystick (smaller version that goes on top of the pad)
     VerticalJoystick v_joystick;
-    ImageButton powerupButton;
+    RadioButton car1Button;
+    RadioButton car2Button;
+    //ImageButton powerupButton;
 
     @Nullable
     @Override
@@ -53,16 +63,29 @@ public class JoystickFragment extends Fragment{
 
         final MainActivity activity = (MainActivity)getActivity();
 
-        xposText = (TextView)view.findViewById(R.id.xposText);
-        yposText = (TextView)view.findViewById(R.id.yposText);
-        directionText2 = (TextView)view.findViewById(R.id.directionText2);
-        directionText = (TextView)view.findViewById(R.id.directionText);
         horizontal_joystick = (RelativeLayout)view.findViewById(R.id.horizontal_joystick);
         vertical_joystick = (RelativeLayout)view.findViewById(R.id.vertical_joystick);
-        powerupButton = (ImageButton)view.findViewById(R.id.powerButton);
+        car1Button = (RadioButton)view.findViewById(R.id.car1Button);
+        car2Button = (RadioButton)view.findViewById(R.id.car2Button);
 
-        h_joystick = new HorizontalJoystick(getActivity().getApplicationContext(),horizontal_joystick, 0);
-        v_joystick = new VerticalJoystick(getActivity().getApplicationContext(),vertical_joystick, 0.3);
+        car1Button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                macAddress = CAR_1_MAC_ADDRESS;
+            }
+
+        });
+
+        car2Button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                macAddress = CAR_2_MAC_ADDRESS;
+            }
+        });
+        //powerupButton = (ImageButton)view.findViewById(R.id.powerButton);
+
+        h_joystick = new HorizontalJoystick(getActivity().getApplicationContext(), horizontal_joystick, 0);
+        v_joystick = new VerticalJoystick(getActivity().getApplicationContext(), vertical_joystick, 0.3);
 
         horizontal_joystick.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View view, MotionEvent event) {
@@ -74,19 +97,16 @@ public class JoystickFragment extends Fragment{
                 int returnData = 0;
                 // If the joystick is touched or moved, do stuff
                 if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-                    xposText.setText("X: " + h_joystick.getPosition());
                     double x_pos = h_joystick.getPosition();
 
-                    if(!servoReverse)
+                    if(servoReverse)
                         x_pos = -x_pos;
                     // Depending on the direction of the joystick, do stuff
                     if (x_pos < 0) {
                         returnData = SERVO_STRAIGHT_AHEAD + (int)(SERVO_MAXIMUM_ANGLE  * x_pos);
-                        directionText.setText("Direction: Left");
                         lastServo = returnData;
                     } else if (x_pos >= 0) {
                         returnData = SERVO_STRAIGHT_AHEAD + (int) (SERVO_MAXIMUM_ANGLE * x_pos);
-                        directionText.setText("Direction: Right");
                         lastServo = returnData;
                     }
                     if(previousValue != returnData) {
@@ -97,12 +117,6 @@ public class JoystickFragment extends Fragment{
                 }
                 // When the joystick is released, reset
                 else if (action == MotionEvent.ACTION_UP) {
-                    returnData = SERVO_STRAIGHT_AHEAD;
-
-                    //for(int i = 0 ; i <= 20; i++)
-                       // activity.addCommand(returnData);
-                    xposText.setText("X:");
-                    directionText.setText("Direction:");
                     activity.stopServo(lastMotor);
                     lastServo = 90;
 
@@ -124,7 +138,6 @@ public class JoystickFragment extends Fragment{
 
                 // If the joystick is touched or moved, do stuff
                 if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-                    yposText.setText("Y: " + v_joystick.getPosition());
                     double y_pos = v_joystick.getPosition();
 
                     if(lockMotorSpeed != -1) {
@@ -137,7 +150,6 @@ public class JoystickFragment extends Fragment{
                             returnData = MOTOR_FORWARD + (int)(MOTOR_FULL_SPEED * y_pos);
                         else
                             returnData = MOTOR_BACKWARD + (int)(MOTOR_FULL_SPEED * y_pos);
-                        directionText2.setText("Direction: Up");
                         lastMotor = returnData;
 
                     } else if (y_pos < 0) {
@@ -145,7 +157,6 @@ public class JoystickFragment extends Fragment{
                             returnData = MOTOR_BACKWARD + (int)(MOTOR_FULL_SPEED  * (-1) * y_pos);
                         else
                             returnData = MOTOR_FORWARD + (int)(MOTOR_FULL_SPEED  * (-1) * y_pos);
-                        directionText2.setText("Direction: Down");
                         lastMotor = returnData;
                     }
 
@@ -157,12 +168,6 @@ public class JoystickFragment extends Fragment{
                 }
                 // When the joystick is released, reset
                 else if (action == MotionEvent.ACTION_UP) {
-                    // Stop the engine
-                    returnData = MOTOR_STOP;
-                    //for(int i = 0 ; i <= 20; i++)
-                        //activity.addCommand(returnData);
-                    yposText.setText("Y:");
-                    directionText2.setText("Direction:");
                     activity.stopMotor(lastServo);
                     lastMotor = 256;
                 }
@@ -229,11 +234,15 @@ public class JoystickFragment extends Fragment{
         }
     }
 
-    private void setPowerupImage() {
+    /*private void setPowerupImage() {
         Context context = (MainActivity)getActivity();
         powerupButton.setImageResource(context.getResources().getIdentifier(
                 Character.toString(powerup), "drawable", context.getPackageName()));
 
+    }*/
+
+    public void setServoReverse(boolean reverse) {
+        servoReverse = reverse;
     }
 
     private class Timer extends Thread {
@@ -256,5 +265,9 @@ public class JoystickFragment extends Fragment{
 
             ((MainActivity)getActivity()).stopPowerup(powerup);
         }
+    }
+
+    public String getMacAddress() {
+        return macAddress;
     }
 }

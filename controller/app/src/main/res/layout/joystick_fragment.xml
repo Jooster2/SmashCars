@@ -43,61 +43,55 @@
         android:layout_marginLeft="40dp"
         android:layout_marginBottom="40dp" />
 
-    <TextView
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:id="@+id/directionText"
-        android:textSize="20dp"
-        android:textColor="#444444"
-        android:text="Direction: "
-        android:layout_below="@+id/xposText"
-        android:layout_alignStart="@+id/horizontal_joystick" />
-
-    <TextView
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:id="@+id/xposText"
-        android:textSize="20dp"
-        android:textColor="#444444"
-        android:text="X: "
-        android:layout_below="@+id/linearLayout1"
-        android:layout_alignStart="@+id/directionText" />
-
-    <TextView
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:id="@+id/directionText2"
-        android:textSize="20dp"
-        android:textColor="#444444"
-        android:text="Direction: "
-        android:layout_below="@+id/yposText"
-        android:layout_alignStart="@+id/vertical_joystick" />
-
-    <TextView
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:id="@+id/yposText"
-        android:textSize="20dp"
-        android:textColor="#444444"
-        android:text="Y: "
-        android:layout_below="@+id/linearLayout1"
-        android:layout_alignStart="@+id/directionText2" />
-
-    <ImageButton
-        android:layout_width="151dp"
-        android:layout_height="126dp"
-        android:id="@+id/powerButton"
-        android:layout_centerHorizontal="true"
-        android:layout_alignTop="@+id/linearLayout1"
-        android:onClick="usePowerup"/>
-
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Connect"
         android:id="@+id/connectButton"
-        android:layout_below="@+id/powerButton"
+        android:onClick="connectNow"
+        android:layout_below="@+id/radioGroup"
+        android:layout_centerHorizontal="true"/>
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/horizontal_joystick"
+        android:id="@+id/radioGroup"
+        android:layout_toStartOf="@+id/horizontal_joystick"
+        android:layout_alignParentEnd="true">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Red Dragon"
+            android:scaleX="2"
+            android:scaleY="2"
+            android:id="@+id/car1Button"
+            android:layout_gravity="center_horizontal"
+            android:checked="false"
+            android:layout_marginTop="20dp"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Yellow Devil"
+            android:scaleX="2"
+            android:scaleY="2"
+            android:id="@+id/car2Button"
+            android:layout_gravity="center_horizontal"
+            android:checked="false"
+            android:layout_marginTop="10dp"/>
+
+    </RadioGroup>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Disconnect"
+        android:id="@+id/disconnectButton"
+        android:layout_below="@+id/connectButton"
         android:layout_centerHorizontal="true"
-        android:onClick="chooseCar"/>
+        android:onClick="disconnect"/>
 
 </RelativeLayout>

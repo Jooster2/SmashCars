@@ -23,7 +23,6 @@ public class BluetoothHandler {
     private ActiveThread activeThread;
     private boolean connecting;
 
-
     private static BluetoothHandler instance = null;
 
     /**
@@ -149,11 +148,11 @@ public class BluetoothHandler {
             //Create a socket aimed for the server device
             try {
                 Log.i(TAG, "Attempting to get UUID");
-                UUID uuid = btServer.getUuids()[0].getUuid();
+                UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
                 Log.i(TAG, uuid.toString());
                 Log.i(TAG, "Attempting to create socket");
                 socket = btServer.createRfcommSocketToServiceRecord(uuid);
-            } catch (Exception e) {
+            } catch (NullPointerException | IOException e) {
                 Log.i(TAG, e.getLocalizedMessage());
             }
             //Attempt to connect to the server device
@@ -201,8 +200,7 @@ public class BluetoothHandler {
                         }
                         //Read a char from the commandbuffer
                         if((toCar = mainActivity.getControllerCommand()) == null) {
-                            //If the command is 0 it is no command, so we sleep and then do it all
-                            //over again
+                            //if command is null, there was no command so we sleep
                             sleep(LATENCY);
                             continue;
                         }

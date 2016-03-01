@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -30,6 +31,8 @@ public class Joystick {
     protected Paint paint;
     protected Bitmap joystick;
 
+    protected String TAG = "joystick";
+
     protected int joystick_width, joystick_height; // Size of the joystick
     protected double position = 0; // Position of the joystick [-1,1] = {x,y in R | -1 <= x,y <= 1}
 
@@ -44,7 +47,7 @@ public class Joystick {
 
         // Get the width/height of the layout
         params = layout.getLayoutParams();
-
+        Log.i(TAG, "params: " + params.width + " " + params.height);
         // Get the image of the joystick
         joystick = BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.joystick_pressed);

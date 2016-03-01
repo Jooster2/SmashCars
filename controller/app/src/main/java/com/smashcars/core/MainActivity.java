@@ -1,5 +1,6 @@
 package com.smashcars.core;
 
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
@@ -16,20 +17,17 @@ import com.smashcars.utils.CircularArray;
 import com.smashcars.R;
 import com.smashcars.joystick.JoystickFragment;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends Activity
 {
     private static final int REQUEST_ENABLE_BT = 1;
-    private static final int REQUEST_CHOOSE_CAR = 2;
     private int hitpoints;
     private boolean immortal = false;
-    private boolean firstRun = true;
     private static final String TAG = "MainActivity";
 
 
     CircularArray<Short> commandBuffer;
     FragmentManager fragmentManager;
     JoystickFragment joystickFragment;
-    CarListFragment carListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -52,50 +50,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-
-        savedInstanceState.putBoolean("firstRun", firstRun);
-        super.onSaveInstanceState(savedInstanceState);
-
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        firstRun = savedInstanceState.getBoolean("firstRun");
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        //if(!(BluetoothHandler.getInstance().isConnected() ||
-          //      BluetoothHandler.getInstance().isConnecting())) {
-        /*if(firstRun) {
-            firstRun = false;
-            Log.i(TAG, "Starting connection-activity");
-            Intent conn = new Intent(getApplicationContext(), CarListActivity.class);
-            startActivityForResult(conn, REQUEST_CHOOSE_CAR);
-            Log.i(TAG, "activity started");
-        }*/
-
-    }
-    @Override
-    protected void onPause() {
-        super.onPause();
-        //BluetoothHandler.getInstance().disconnect();
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "ondestroy mainactivity");
-        //BluetoothHandler.getInstance().disconnect();
+        BluetoothHandler.getInstance().disconnect();
     }
 
-    public void chooseCar(View v) {
-        Intent conn = new Intent(getApplicationContext(), CarListActivity.class);
-        startActivityForResult(conn, REQUEST_CHOOSE_CAR);
-    }
 
     //TODO is this method necessary?
     @Override
@@ -139,11 +99,6 @@ public class MainActivity extends AppCompatActivity
             Log.i(TAG, "Activity was enable BT");
             connectNow(null);
         }
-        else if(resultCode == RESULT_OK && requestCode == REQUEST_CHOOSE_CAR) {
-            Log.i(TAG, "Activity was choose car");
-            String mac = data.getStringExtra("result");
-            connectNow(mac);
-        }
     }
 
     public void resultFromBluetooth(char fromCar) {
@@ -177,9 +132,9 @@ public class MainActivity extends AppCompatActivity
      * Called by button press or onActivityResult method
      * Enables bluetooth, and calls the connect method in the BluetoothHandler with the MAC-address
      * specified in textfield as argument (can be null)
-     * @param macAddress the address to connect to
+     * @param v the calling View
      */
-    public void connectNow(String macAddress) {
+    public void connectNow(View v) {
         Log.i(TAG, "connect-button pressed");
         if(!BluetoothHandler.getInstance().isEnabled()) {
             Log.i(TAG, "Bluetooth disabled, enabling it now");
@@ -187,10 +142,17 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 
         } else {
+            if(BluetoothHandler.getInstance().isConnected())
+                BluetoothHandler.getInstance().disconnect();
+            String macAddress = joystickFragment.getMacAddress();
             if(macAddress != null) {
                 Log.i(TAG, "Calling BT-handler with MAC: " + macAddress);
-                Log.i(TAG, "FirstRun is: " + firstRun);
                 BluetoothHandler.getInstance().connect(macAddress);
+                //Special solution for yellow cars reversed servo
+                if(macAddress.equals("00:06:66:7B:AB:CA"))
+                    joystickFragment.setServoReverse(true);
+                else
+                    joystickFragment.setServoReverse(false);
 
             }
         }
