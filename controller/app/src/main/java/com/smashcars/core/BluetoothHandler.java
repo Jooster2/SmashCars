@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.UUID;
@@ -13,19 +14,14 @@ import java.util.UUID;
  * @author Joakim Schmidt
  */
 public class BluetoothHandler {
-    //Carls MAC-address
-    private static final String SERVER_MAC = "00:06:66:7B:AC:2C";
-    //private static final String SERVER_MAC = "00:06:66:7B:AB:CA";
-    //private static final UUID uuid = UUID.fromString("a76070ab-55ed-515c-98c7-28c7757e81c2");
     private static final int LATENCY = 50;
-    //private static final UUID _UUID = java.util.UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
     private static final String TAG = "bthandler";
 
     private MainActivity mainActivity;
     private BluetoothAdapter btAdapter;
     private BluetoothDevice btServer;
     private ActiveThread activeThread;
-
+    private boolean connecting;
 
     private static BluetoothHandler instance = null;
 
@@ -47,6 +43,7 @@ public class BluetoothHandler {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         if(btAdapter == null)
             Log.i(TAG, "Bluetooth hardware not found");
+        connecting = false;
     }
 
     /**
@@ -68,14 +65,17 @@ public class BluetoothHandler {
     /**
      * Attempts to connect to the SERVER_MAC address
      */
-    public void connect() {
+    public void connect(String macAddress) {
+        connecting = true;
         Log.i(TAG, "Starting connection procedure");
-        btServer = btAdapter.getRemoteDevice(SERVER_MAC);
+        Log.i(TAG, "MAC-address is " + macAddress);
+        btServer = btAdapter.getRemoteDevice(macAddress);
         if(btServer != null) {
             Log.i(TAG, "Found server");
             //Success, device found. Now send the device to a thread and start it
             activeThread = new ActiveThread(btServer);
             activeThread.start();
+
         } else {
             Log.i(TAG, "Did not find server");
         }
@@ -91,6 +91,19 @@ public class BluetoothHandler {
         } catch(NullPointerException e) {
             Log.i(TAG, "Failed disconnecting due to no activeThread object");
         }
+    }
+
+    public boolean isConnected() {
+        //return true;
+        try {
+            return activeThread.isConnected();
+        } catch(NullPointerException e) {
+            return false;
+        }
+    }
+
+    public boolean isConnecting() {
+        return connecting;
     }
 
     /**
@@ -117,6 +130,10 @@ public class BluetoothHandler {
             Log.i(TAG, "Disconnected");
         }
 
+        private boolean isConnected() {
+            return isConnected;
+        }
+
         /**
          * Opens the connection, and an outputstream to the socket.
          * Sends one char over the connection every LATENCY milliseconds
@@ -130,13 +147,11 @@ public class BluetoothHandler {
 
             //Create a socket aimed for the server device
             try {
-                Log.i(TAG, "Attempting to get UUID");
-                UUID uuid = btServer.getUuids()[0].getUuid();
-                Log.i(TAG, uuid.toString());
+                UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+                Log.i(TAG, "UUID: " + uuid.toString());
                 Log.i(TAG, "Attempting to create socket");
                 socket = btServer.createRfcommSocketToServiceRecord(uuid);
-                //Log.i(TAG, "UUID: " + btServer.getUuids()[0].getUuid().toString());
-            } catch (Exception e) {
+            } catch (NullPointerException | IOException e) {
                 Log.i(TAG, e.getLocalizedMessage());
             }
             //Attempt to connect to the server device
@@ -145,6 +160,7 @@ public class BluetoothHandler {
                 btAdapter.cancelDiscovery();
                 socket.connect();
                 isConnected = true;
+                connecting = false;
                 Log.i(TAG, "Connected");
             } catch (Exception e) {
 
@@ -162,23 +178,35 @@ public class BluetoothHandler {
             //Create the datastream, and start sending commands (from mainactivitys circularbuffer)
             //Send one char at a time, with LATENCY milliseconds between
             try {
-                Log.i(TAG, "Attempting to open stream");
+                Log.i(TAG, "Attempting to open streams");
                 DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-                //Toast.makeText(mainActivity.getBaseContext(), "Connected", Toast.LENGTH_SHORT);
-                Short cmd;
+                DataInputStream dis = new DataInputStream(socket.getInputStream());
+                Short toCar;
+                char fromCar;
                 while(isConnected) {
                     try {
+                        if(dis.available() != 0) {
+                            fromCar = (char)dis.readByte();
+                            Log.i(TAG, "Read from car: " + fromCar);
+                            final char fromCar2 = fromCar;
+                            mainActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mainActivity.resultFromBluetooth(fromCar2);
+                                }
+                            });
+
+                        }
                         //Read a char from the commandbuffer
-                        if((cmd = mainActivity.getControllerCommand()) == null) {
-                            //If the command is 0 it is no command, so we sleep and then do it all
-                            //over again
+                        if((toCar = mainActivity.getControllerCommand()) == null) {
+                            //if command is null, there was no command so we sleep
                             sleep(LATENCY);
                             continue;
                         }
                         else {
                             //If command is valid write it to the stream
-                            Log.i(TAG, "Writing to socket stream: " + cmd);
-                            dos.writeShort(cmd);
+                            Log.i(TAG, "Writing to socket stream: " + toCar);
+                            dos.writeShort(toCar);
                         }
                     } catch(IOException | InterruptedException e) {
                         Log.i(TAG, e.getLocalizedMessage());

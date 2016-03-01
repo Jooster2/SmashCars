@@ -3,24 +3,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 tools:context=".MainActivity"
-                android:id="@+id/fragment_container">
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Connect"
-        android:id="@+id/connectButton"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:onClick="connectNow" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Disconnect"
-        android:id="@+id/disconnectButton"
-        android:layout_below="@+id/connectButton"
-        android:layout_centerHorizontal="true"
-        android:onClick="disconnect"/>
+                android:id="@+id/activity_main">
 
 </RelativeLayout>

@@ -1,8 +1,11 @@
 package com.smashcars.core;
 
+import android.app.Activity;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,10 +17,13 @@ import com.smashcars.utils.CircularArray;
 import com.smashcars.R;
 import com.smashcars.joystick.JoystickFragment;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends Activity
 {
     private static final int REQUEST_ENABLE_BT = 1;
+    private int hitpoints;
+    private boolean immortal = false;
     private static final String TAG = "MainActivity";
+
 
     CircularArray<Short> commandBuffer;
     FragmentManager fragmentManager;
@@ -27,22 +33,29 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        //firstRun = savedInstanceState.getBoolean("firstRun", true);
 
         setContentView(R.layout.activity_main);
         commandBuffer = new CircularArray<> (10);
         //Initiate the BluetoothHandler
         BluetoothHandler.getInstance().setActivity(this);
-
+        hitpoints = 3;
         fragmentManager = getFragmentManager();
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        joystickFragment = new JoystickFragment();
+        fragmentManager.beginTransaction()
+                .add(R.id.activity_main, joystickFragment).commit();
 
         Log.i(TAG, "onCreate done");
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "ondestroy mainactivity");
         BluetoothHandler.getInstance().disconnect();
     }
+
 
     //TODO is this method necessary?
     @Override
@@ -82,15 +95,44 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "Got activity result");
-        if(resultCode == RESULT_OK && requestCode == REQUEST_ENABLE_BT)
+        if(resultCode == RESULT_OK && requestCode == REQUEST_ENABLE_BT) {
+            Log.i(TAG, "Activity was enable BT");
             connectNow(null);
+        }
     }
+
+    public void resultFromBluetooth(char fromCar) {
+        if(fromCar == 'L') {
+            changeHitpoints(-1);
+            if(hitpoints <= 0);
+                //TODO end the game
+        }
+        else {
+            joystickFragment.setPowerup(fromCar);
+        }
+    }
+
+    public void changeHitpoints(int delta) {
+        if(delta < 0 && immortal)
+            return;
+        hitpoints += delta;
+    }
+
+    public void setImmortal(boolean immortal) {
+        this.immortal = immortal;
+    }
+
+    public void stopPowerup(char powerup) {
+        joystickFragment.stopPowerup(powerup);
+    }
+
+
 
     /**
      * Called by button press or onActivityResult method
      * Enables bluetooth, and calls the connect method in the BluetoothHandler with the MAC-address
      * specified in textfield as argument (can be null)
-     * @param v view that called this
+     * @param v the calling View
      */
     public void connectNow(View v) {
         Log.i(TAG, "connect-button pressed");
@@ -100,11 +142,19 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 
         } else {
-            BluetoothHandler.getInstance().connect();
+            if(BluetoothHandler.getInstance().isConnected())
+                BluetoothHandler.getInstance().disconnect();
+            String macAddress = joystickFragment.getMacAddress();
+            if(macAddress != null) {
+                Log.i(TAG, "Calling BT-handler with MAC: " + macAddress);
+                BluetoothHandler.getInstance().connect(macAddress);
+                //Special solution for yellow cars reversed servo
+                if(macAddress.equals("00:06:66:7B:AB:CA"))
+                    joystickFragment.setServoReverse(true);
+                else
+                    joystickFragment.setServoReverse(false);
 
-            joystickFragment = new JoystickFragment();
-            fragmentManager.beginTransaction()
-                    .add(R.id.fragment_container, joystickFragment).commit();
+            }
         }
     }
 
