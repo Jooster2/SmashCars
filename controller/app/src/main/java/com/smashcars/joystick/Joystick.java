@@ -52,8 +52,8 @@ public class Joystick {
         joystick = BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.joystick_pressed);
         // Set values for joystick (half the size of the layout)
-        joystick_width = params.width/2;
-        joystick_height = params.height/2;
+        joystick_width = params.width/3;
+        joystick_height = params.height/3;
         // Create a scaled version (smaller than the background layout)
         joystick = Bitmap.createScaledBitmap(joystick, joystick_width, joystick_height,
                 false);

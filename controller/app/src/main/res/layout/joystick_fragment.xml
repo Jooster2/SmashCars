@@ -19,29 +19,29 @@
 
     </LinearLayout>
     <RelativeLayout
-        android:layout_height="150dp"
-        android:layout_width="150dp"
+        android:layout_height="200dp"
+        android:layout_width="200dp"
         android:id="@+id/horizontal_joystick"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:background="@drawable/joystick"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginRight="40dp"
-        android:layout_marginBottom="40dp">
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="20dp">
     </RelativeLayout>
 
     <RelativeLayout
-        android:layout_height="150dp"
-        android:layout_width="150dp"
+        android:layout_height="200dp"
+        android:layout_width="200dp"
         android:id="@+id/vertical_joystick"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:background="@drawable/joystick"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="false"
-        android:layout_marginLeft="40dp"
-        android:layout_marginBottom="40dp" />
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="20dp" />
 
     <Button
         android:layout_width="wrap_content"
