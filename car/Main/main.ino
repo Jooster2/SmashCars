@@ -10,7 +10,7 @@
 //#define BACKWARD 1
 //#define SERVO 2
 //#define BRAKE 3
-#define CRASH_SENSOR_PIN 12
+#define CRASH_SENSOR_PIN 15
 
 bool sensorIsActive;
 boolean driveForward;
@@ -69,12 +69,14 @@ void setup() {
   vw_setup(2000);  // Bits per sec
   vw_rx_start();   // Start the receiver PLL running
 */
- 
+ pinMode(8, OUTPUT);
 }
 
 void loop() {  
   int cmd;
   int val;
+
+    
   
   if( bluetooth.available() ){       // if data is available to read
     cmd = readData();
@@ -99,14 +101,16 @@ void loop() {
     lostCon = 0;
   }
   else {
-    if (lostCon == 20)
+    if (lostCon == 100)
     {
       dcMotor->setSpeed(0);
       dcMotor->run(FORWARD);
       dcMotor->run(RELEASE);
       servo.write (90);
     }
+    
     delay (50);
+    
     lostCon++;
   }
   /*
@@ -133,6 +137,9 @@ void loop() {
     if(digitalRead(CRASH_SENSOR_PIN) == HIGH){
       //Serial.print(sensorIsActive);
       bluetooth.write('L');
+      digitalWrite(8, HIGH);
+      delay (1000);
+      digitalWrite(8, LOW);
       //Serial.print("L");
       sensorIsActive = false;
     }
@@ -157,7 +164,7 @@ void turnServo(int val){
 }
 
 void demask(int cmd){
-  int temp = cmd & 0b00011111;
+  int temp = cmd & 0b00001111;
   if (temp == 1){
     driveForward =false;
     driveBackwards = true;
