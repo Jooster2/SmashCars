@@ -103,11 +103,11 @@ public class MainActivity extends Activity
 
     public void resultFromBluetooth(char fromCar) {
         if(fromCar == 'L') {
+            Log.i(TAG, "Lost one life");
             changeHitpoints(-1);
             if(hitpoints <= 0);
                 //TODO end the game
-        }
-        else {
+        } else {
             joystickFragment.setPowerup(fromCar);
         }
     }
