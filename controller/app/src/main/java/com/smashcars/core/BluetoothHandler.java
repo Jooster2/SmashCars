@@ -186,7 +186,7 @@ public class BluetoothHandler {
                 while(isConnected) {
                     try {
                         if(dis.available() != 0) {
-                            fromCar = (char)dis.readByte();
+                            fromCar = (char) dis.readByte();
                             Log.i(TAG, "Read from car: " + fromCar);
                             final char fromCar2 = fromCar;
                             mainActivity.runOnUiThread(new Runnable() {
@@ -197,6 +197,10 @@ public class BluetoothHandler {
                             });
 
                         }
+                    } catch (IOException e) {
+                        Log.i(TAG, e.getLocalizedMessage());
+                    }
+                    try {
                         //Read a char from the commandbuffer
                         if((toCar = mainActivity.getControllerCommand()) == null) {
                             //if command is null, there was no command so we sleep

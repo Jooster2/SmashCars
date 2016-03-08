@@ -133,7 +133,7 @@ void loop() {
     bluetooth.write(buf[4]);
 */
   //Crash sensor stuff
-  if(sensorIsActive){
+  /*if(sensorIsActive){
     if(digitalRead(CRASH_SENSOR_PIN) == HIGH){
       //Serial.print(sensorIsActive);
       bluetooth.write('L');
@@ -145,7 +145,7 @@ void loop() {
     }
   }else
     if(digitalRead(CRASH_SENSOR_PIN) == LOW)
-      sensorIsActive = true;
+      sensorIsActive = true;*/
 }
 
 int readData(){
