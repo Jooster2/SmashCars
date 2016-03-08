@@ -33,7 +33,7 @@ SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
  
 void setup() {
-  //Serial.begin(9600);// Debugging only
+  Serial.begin(9600);// Debugging only
   //Serial.println("setup");
  
   bluetooth.begin(115200);  // The Bluetooth Mate defaults to 115200bps
@@ -78,13 +78,14 @@ void loop() {
 
     
   
-  if( bluetooth.available() ){       // if data is available to read
+  //if( bluetooth.available() ){       // if data is available to read
+  if(Serial.available()) {
     cmd = readData();
-    Serial.println("COMMANDS : ");
-    Serial.println(cmd);
+    //Serial.println("COMMANDS : ");
+    //Serial.println(cmd);
     val = readData();
-    Serial.println("VALUES : ");
-    Serial.println(val);
+    //Serial.println("VALUES : ");
+    //Serial.println(val);
     demask(cmd);
     if(servoTurn){  
      turnServo(val);
@@ -149,7 +150,8 @@ void loop() {
 }
 
 int readData(){
-  int data = (int)bluetooth.read();
+  //int data = (int)bluetooth.read();
+  int data = (int)Serial.read();
   return data;
 }
 
@@ -159,8 +161,8 @@ void brake(){
 void turnServo(int val){
   //servo.write ((int)(val*8.333333)+750); 
   servo.write(val);
-  Serial.println("Servo vrid");
-  Serial.println(val);
+  //Serial.println("Servo vrid");
+  //Serial.println(val);
 }
 
 void demask(int cmd){
