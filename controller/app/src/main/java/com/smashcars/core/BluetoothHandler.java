@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -106,6 +107,53 @@ public class BluetoothHandler {
         return connecting;
     }
 
+
+    private class PassiveThread extends Thread {
+        private BluetoothSocket socket;
+        private boolean isConnected = false;
+
+        public PassiveThread(BluetoothSocket socket) {
+            this.socket = socket;
+        }
+
+        private void disconnect() {
+            isConnected = false;
+        }
+        private boolean isConnected() {
+            return isConnected();
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void run() {
+            try {
+                DataInputStream dis = new DataInputStream(socket.getInputStream());
+                char fromCar;
+                while(isConnected) {
+                    try {
+                        Log.i(TAG, "Attempt to read data from car");
+                        fromCar = (char) dis.readByte();
+                        Log.i(TAG, "Read from car: " + fromCar);
+                        if(fromCar != '#') {
+                            final char fromCar2 = fromCar;
+                            mainActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mainActivity.resultFromBluetooth(fromCar2);
+                                }
+                            });
+                        }
+                    } catch(Exception e) {
+                        Log.i(TAG, "EOF-exception?");
+                    }
+                }
+                dis.close();
+            } catch(IOException e) {
+                Log.i(TAG, e.getLocalizedMessage());
+            }
+
+        }
+    }
     /**
      * Opens and manages the connection to another Bluetooth device
      * @author Joakim Schmidt
@@ -144,7 +192,7 @@ public class BluetoothHandler {
         public void run() {
             Log.i(TAG, "Run starting");
             BluetoothSocket socket = null;
-
+            PassiveThread passiveThread = null;
             //Create a socket aimed for the server device
             try {
                 UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
@@ -179,27 +227,17 @@ public class BluetoothHandler {
             //Send one char at a time, with LATENCY milliseconds between
             try {
                 Log.i(TAG, "Attempting to open streams");
+                //passiveThread = new PassiveThread(socket);
+                //§passiveThread.start();
                 DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-                DataInputStream dis = new DataInputStream(socket.getInputStream());
                 Short toCar;
-                char fromCar;
                 while(isConnected) {
                     try {
-                        if(dis.available() != 0) {
-                            fromCar = (char)dis.readByte();
-                            Log.i(TAG, "Read from car: " + fromCar);
-                            final char fromCar2 = fromCar;
-                            mainActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mainActivity.resultFromBluetooth(fromCar2);
-                                }
-                            });
-
-                        }
+                        Log.i(TAG, "Attempt to send data to car");
                         //Read a char from the commandbuffer
                         if((toCar = mainActivity.getControllerCommand()) == null) {
                             //if command is null, there was no command so we sleep
+                            Log.i(TAG, "Going to sleep in sending");
                             sleep(LATENCY);
                             continue;
                         }
@@ -232,6 +270,12 @@ public class BluetoothHandler {
 
                 //Clean up
                 Log.i(TAG, "Closing stream and socket");
+                passiveThread.disconnect();
+                try {
+                    passiveThread.interrupt();
+                } catch (SecurityException e) {
+                    Log.i(TAG, e.getLocalizedMessage());
+                }
                 dos.flush();
                 dos.close();
                 socket.close();

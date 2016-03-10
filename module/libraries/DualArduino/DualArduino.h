@@ -5,9 +5,7 @@
 #ifndef _dualArduino_h
 #define _dualArduino_h
 
-#include <iostream>
 #include <Arduino.h>
-#include <vector>
 
 class DualArduino {
   public:
@@ -35,9 +33,7 @@ class DualArduino {
     char dataInTransfer;
     
     std::vector<char> output_data;
-    std::vector<char> input_data;
-
-    
+    std::vector<char> input_data; 
 };
 
 
